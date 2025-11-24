@@ -1,7 +1,5 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
 
-
-from pydantic import validator
 
 class AccountCreate(BaseModel):
     username: str
