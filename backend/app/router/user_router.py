@@ -1,0 +1,64 @@
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session
+
+from app.auth.dependencies import get_current_account
+from app.database.session import get_db
+from app.schema.user_schema import ChangePassword, UpdateProfile, UserProfile, UserRegister
+from app.service.user_service import UserService
+
+router = APIRouter(prefix="/user", tags=["User"])
+
+
+@router.post("/register", response_model=UserProfile, status_code=status.HTTP_201_CREATED)
+def register(user_data: UserRegister, db: Session = Depends(get_db)):
+    """Đăng ký tài khoản khách hàng mới"""
+    service = UserService(db)
+    try:
+        customer = service.register_user(user_data)
+        return customer
+    except ValueError as e:
+        print(f"Registration error: {str(e)}")
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        print(f"Unexpected registration error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Registration failed: {str(e)}")
+
+
+@router.get("/profile", response_model=UserProfile)
+def get_profile(current_account=Depends(get_current_account), db: Session = Depends(get_db)):
+    """Lấy thông tin profile của user đang đăng nhập"""
+    service = UserService(db)
+    profile = service.get_user_profile(current_account.PK_Account)
+    if not profile:
+        raise HTTPException(status_code=404, detail="Profile not found")
+    return profile
+
+
+@router.put("/profile", response_model=UserProfile)
+def update_profile(
+    profile_data: UpdateProfile, current_account=Depends(get_current_account), db: Session = Depends(get_db)
+):
+    """Cập nhật thông tin profile"""
+    service = UserService(db)
+    updated = service.update_user_profile(current_account.PK_Account, profile_data)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Profile not found")
+    return updated
+
+
+@router.post("/change-password")
+def change_password(
+    password_data: ChangePassword, current_account=Depends(get_current_account), db: Session = Depends(get_db)
+):
+    """Đổi mật khẩu"""
+    service = UserService(db)
+    try:
+        success = service.change_password(
+            current_account.PK_Account, password_data.old_password, password_data.new_password
+        )
+        if success:
+            return {"message": "Password changed successfully"}
+        else:
+            raise HTTPException(status_code=404, detail="Account not found")
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))

@@ -1,0 +1,12 @@
+# Ruff configuration for linting and auto-formatting
+
+line-length = 120
+
+[lint]
+extend-select = ["E", "F", "W", "I"]
+
+[format]
+# Enable Ruff formatter
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
