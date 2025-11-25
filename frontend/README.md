@@ -1,3 +1,54 @@
+## Frontend — Connect to Backend (Quick Guide)
+
+This project uses a Vite + React frontend that communicates with a FastAPI backend.
+
+Quick steps to connect and run locally:
+
+- Ensure the backend is running (default: `http://localhost:8000`).
+- Set frontend environment variable `VITE_API_BASE_URL` to the backend base URL (example `.env` in `frontend/`):
+
+```env
+VITE_API_BASE_URL=http://localhost:8000
+```
+
+- Confirm the frontend `api` client reads `import.meta.env.VITE_API_BASE_URL` (see `frontend/src/config/api.ts`).
+- Start backend (PowerShell from `d:\test\backend`):
+
+```powershell
+.venv\Scripts\Activate.ps1
+uvicorn app.main:app --reload
+```
+
+- Start frontend (PowerShell from `d:\test\frontend`):
+
+```powershell
+npm install
+npm run dev
+```
+
+If you prefer, you can also set the base URL directly in `frontend/src/config/api.ts`.
+
+Troubleshooting:
+- If you see CORS errors, add the frontend origin (`http://localhost:5173`) to the backend CORS allowed origins.
+- Inspect network requests in the browser DevTools; ensure requests go to the configured `VITE_API_BASE_URL`.
+
+--
+
+
+---
+
+## New Features
+
+- **Customer Management:**
+  - Customers cannot be deleted, chỉ có thể chuyển trạng thái sang "Inactive" bằng nút Deactivate trong trang admin.
+  - Để kích hoạt lại, vào Edit customer và chọn lại trạng thái "Active".
+
+- **POS Order Filtering:**
+  - Trang POS Order (admin) hỗ trợ lọc sản phẩm theo tên, theo category, và theo product.
+  - Sử dụng ô search, dropdown category, và dropdown product để lọc nhanh các biến thể sản phẩm.
+
+---
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.

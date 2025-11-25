@@ -1,9 +1,48 @@
+/* --- START OF FILE Common.css --- */
+
+/* 1. Variables & Reset */
+:root {
+    --primary: #4f46e5;
+    /* Indigo 600 */
+    --primary-hover: #4338ca;
+    /* Indigo 700 */
+    --secondary: #64748b;
+    /* Slate 500 */
+    --success: #10b981;
+    /* Emerald 500 */
+    --danger: #ef4444;
+    /* Red 500 */
+    --warning: #f59e0b;
+    /* Amber 500 */
+    --background: #f3f4f6;
+    /* Gray 100 */
+    --card-bg: #ffffff;
+    --text-main: #111827;
+    /* Gray 900 */
+    --text-muted: #6b7280;
+    /* Gray 500 */
+    --border: #e5e7eb;
+    /* Gray 200 */
+    --radius: 10px;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+body {
+    background-color: var(--background);
+    color: var(--text-main);
+    font-family: var(--font-family);
+    margin: 0;
+}
+
+/* 2. Page Structure */
 .page-container {
-    background: white;
-    border-radius: 12px;
-    padding: 24px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    border: 2px solid rgba(52, 152, 219, 0.1);
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 0 20px;
+    animation: fadeIn 0.4s ease-out;
 }
 
 .page-header {
@@ -11,130 +50,242 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 24px;
-    padding-bottom: 16px;
-    border-bottom: 3px solid #3498db;
+    background: transparent;
+    border: none;
+    padding: 0;
 }
 
 .page-header h1 {
-    margin: 0;
-    color: #2c3e50;
     font-size: 28px;
     font-weight: 700;
+    color: var(--text-main);
+    margin: 0;
+    letter-spacing: -0.5px;
+}
+
+/* 3. Buttons */
+button {
+    font-family: var(--font-family);
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    background-color: var(--primary);
     color: white;
     border: none;
-    padding: 12px 24px;
+    padding: 10px 20px;
     border-radius: 8px;
-    cursor: pointer;
+    font-weight: 500;
     font-size: 14px;
-    font-weight: 600;
-    transition: all 0.3s;
-    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: var(--shadow-sm);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(52, 152, 219, 0.4);
+    background-color: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
 }
 
+.btn-secondary {
+    background-color: white;
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+    background-color: #f9fafb;
+    border-color: #d1d5db;
+}
+
+/* 4. Table Styling */
 .table-container {
-    overflow-x: auto;
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+    overflow: hidden;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
-    border-radius: 8px;
-    overflow: hidden;
+    font-size: 14px;
 }
 
 thead {
-    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    background-color: #f9fafb;
+    border-bottom: 1px solid var(--border);
 }
 
 th {
     text-align: left;
-    padding: 14px 12px;
-    border-bottom: 2px solid #2980b9;
+    padding: 16px 24px;
     font-weight: 600;
-    color: white;
+    color: var(--text-muted);
     text-transform: uppercase;
     font-size: 11px;
-    letter-spacing: 0.8px;
-}
-
-td {
-    padding: 12px;
-    border-bottom: 1px solid #f0f0f0;
-    vertical-align: middle;
+    letter-spacing: 0.05em;
+    border: none;
 }
 
 tbody tr {
-    transition: all 0.2s;
+    border-bottom: 1px solid var(--border);
+    transition: background-color 0.2s;
+}
+
+tbody tr:last-child {
+    border-bottom: none;
 }
 
 tbody tr:hover {
-    background: rgba(52, 152, 219, 0.05);
+    background-color: #f9fafb;
 }
 
+td {
+    padding: 16px 24px;
+    vertical-align: middle;
+    color: var(--text-main);
+}
+
+/* 5. Action Buttons in Table */
 .action-buttons {
     display: flex;
     gap: 8px;
-    align-items: center;
 }
 
 .btn-edit,
-.btn-delete {
-    padding: 8px 14px;
-    border: none;
+.btn-delete,
+.btn-detail {
+    padding: 6px 12px;
     border-radius: 6px;
-    cursor: pointer;
     font-size: 12px;
-    font-weight: 600;
-    transition: all 0.3s;
-    white-space: nowrap;
+    font-weight: 500;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s;
 }
 
 .btn-edit {
-    background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
-    color: white;
-    box-shadow: 0 2px 8px rgba(243, 156, 18, 0.3);
+    background-color: #eff6ff;
+    color: var(--primary);
+    border-color: #dbeafe;
 }
 
 .btn-edit:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(243, 156, 18, 0.4);
+    background-color: #dbeafe;
 }
 
 .btn-delete {
-    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-    color: white;
-    box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3);
+    background-color: #fef2f2;
+    color: var(--danger);
+    border-color: #fee2e2;
 }
 
 .btn-delete:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
+    background-color: #fee2e2;
 }
 
+.btn-detail {
+    background-color: #f3f4f6;
+    color: var(--text-main);
+    border-color: #e5e7eb;
+}
+
+.btn-detail:hover {
+    background-color: #e5e7eb;
+}
+
+/* 6. Modal Styling */
 .modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.6);
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 1000;
-    backdrop-filter: blur(4px);
     animation: fadeIn 0.2s ease-out;
 }
 
+.modal-content {
+    background: white;
+    padding: 32px;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 500px;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-lg);
+    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+}
+
+.modal-content h2 {
+    margin-top: 0;
+    margin-bottom: 24px;
+    font-size: 20px;
+    color: var(--text-main);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 16px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-main);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.2s;
+    background: #fff;
+    box-sizing: border-box;
+    font-family: var(--font-family);
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 32px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+}
+
+/* Animations */
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -145,93 +296,54 @@ tbody tr:hover {
     }
 }
 
-.modal-content {
-    background: white;
-    padding: 30px;
-    border-radius: 12px;
-    width: 90%;
-    max-width: 500px;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
-    animation: slideUp 0.3s ease-out;
-}
-
 @keyframes slideUp {
     from {
-        transform: translateY(20px);
         opacity: 0;
+        transform: translateY(20px) scale(0.95);
     }
 
     to {
-        transform: translateY(0);
         opacity: 1;
+        transform: translateY(0) scale(1);
     }
 }
 
-.modal-content h2 {
-    margin: 0 0 24px;
-    color: #2c3e50;
-    font-size: 24px;
-    font-weight: 700;
-    padding-bottom: 12px;
-    border-bottom: 3px solid #3498db;
-}
-
-.form-group {
-    margin-bottom: 15px;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 5px;
-    color: #555;
+/* Utilities */
+.loading {
+    display: flex;
+    justify-content: center;
+    padding: 60px;
+    color: var(--text-muted);
     font-weight: 500;
 }
 
-.form-group input,
-.form-group select,
-.form-group textarea {
-    width: 100%;
-    padding: 12px 14px;
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    font-size: 14px;
-    box-sizing: border-box;
-    transition: all 0.3s;
+/* Badge Styles for Status */
+.status-badge {
+    padding: 4px 10px;
+    border-radius: 99px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
 }
 
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
-    outline: none;
-    border-color: #3498db;
-    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+.status-active,
+.status-completed {
+    background-color: #ecfdf5;
+    color: #059669;
 }
 
-.modal-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 20px;
+.status-inactive,
+.status-cancelled {
+    background-color: #fef2f2;
+    color: #dc2626;
 }
 
-.btn-secondary {
-    background: #95a5a6;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
+.status-pending {
+    background-color: #fffbeb;
+    color: #d97706;
 }
 
-.btn-secondary:hover {
-    background: #7f8c8d;
-}
-
-.loading {
-    text-align: center;
-    padding: 40px;
-    font-size: 18px;
-    color: #666;
+.status-processing {
+    background-color: #eff6ff;
+    color: #2563eb;
 }

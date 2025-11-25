@@ -111,3 +111,20 @@ def create_order(order_data: dict, customer_id: int = Depends(get_current_custom
         return new_order
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/{order_id}/cancel", response_model=OrderResponse)
+def cancel_my_order(order_id: int, customer_id: int = Depends(get_current_customer_id), db: Session = Depends(get_db)):
+    """Hủy đơn hàng của user (chỉ user chủ sở hữu mới được hủy)"""
+    from app.model.posorder_model import POSOrder
+
+    # Verify order belongs to customer
+    order = db.query(POSOrder).filter(POSOrder.PK_POSOrder == order_id, POSOrder.CustomerID == customer_id).first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    service = OrderService(db)
+    cancelled = service.cancel_order(order_id)
+    if not cancelled:
+        raise HTTPException(status_code=400, detail="Order not found or already cancelled")
+    return cancelled

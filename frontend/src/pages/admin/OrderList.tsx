@@ -1,14 +1,19 @@
+/* --- START OF FILE OrderList.tsx --- */
+
 import { useState, useEffect } from 'react';
 import { orderService } from '../../services/orderService';
 import { customerService } from '../../services/customerService';
 import type { Order, Customer } from '../../types';
+import type { OrderDetail, OrderLine } from '../../types/order';
 import './Common.css';
 
 export default function OrderList() {
     const [orders, setOrders] = useState<Order[]>([]);
     const [customers, setCustomers] = useState<Customer[]>([]);
     const [loading, setLoading] = useState(true);
-    const [editingStatus, setEditingStatus] = useState<{ orderId: number; status: string } | null>(null);
+
+    const [selectedOrder, setSelectedOrder] = useState<OrderDetail | null>(null);
+    const [detailLoading, setDetailLoading] = useState(false);
 
     useEffect(() => {
         loadData();
@@ -20,7 +25,8 @@ export default function OrderList() {
                 orderService.getAll(0, 100),
                 customerService.getAll(0, 100),
             ]);
-            setOrders(ordersData);
+            // Sắp xếp đơn hàng mới nhất lên đầu
+            setOrders(ordersData.sort((a: Order, b: Order) => b.PK_POSOrder - a.PK_POSOrder));
             setCustomers(customersData);
         } catch (error) {
             console.error('Error loading data:', error);
@@ -41,23 +47,45 @@ export default function OrderList() {
     };
 
     const handleStatusChange = async (orderId: number, newStatus: string) => {
+        const order = orders.find(o => o.PK_POSOrder === orderId);
+        if (!order) return;
+        if (order.Status === 'CANCELLED' || order.Status === 'COMPLETED') {
+            alert('Cannot change status of cancelled or completed orders!');
+            return;
+        }
+        const irreversible = ["CANCELLED", "COMPLETED"];
+        if (irreversible.includes(newStatus.toUpperCase())) {
+            const confirmMsg =
+                "Khi chuyển trạng thái sang '" +
+                (newStatus.toUpperCase() === "CANCELLED" ? "Đã hủy" : "Hoàn thành") +
+                "', bạn sẽ không thể đổi lại trạng thái khác nữa. Bạn có chắc chắn muốn thực hiện?";
+            if (!window.confirm(confirmMsg)) return;
+        }
         try {
             await orderService.update(orderId, { Status: newStatus });
+            alert('Trạng thái đơn hàng đã được cập nhật thành công!');
             loadData();
-            setEditingStatus(null);
         } catch (error: any) {
             alert(error.response?.data?.detail || 'Failed to update status');
         }
     };
 
-    const handleDelete = async (id: number) => {
-        if (!confirm('Are you sure you want to delete this order?')) return;
+    const handleShowDetail = async (orderId: number) => {
+        setDetailLoading(true);
+        setSelectedOrder({ PK_POSOrder: orderId } as any); // Temporary placeholder
         try {
-            await orderService.delete(id);
-            loadData();
+            const detail = await orderService.getDetail(orderId);
+            setSelectedOrder(detail);
         } catch (error) {
-            alert('Failed to delete order');
+            alert('Failed to load order details');
+            setSelectedOrder(null);
+        } finally {
+            setDetailLoading(false);
         }
+    };
+
+    const handleCloseDetail = () => {
+        setSelectedOrder(null);
     };
 
     const getCustomerName = (id?: number) => {
@@ -70,7 +98,7 @@ export default function OrderList() {
     return (
         <div className="page-container">
             <div className="page-header">
-                <h1>Orders</h1>
+                <h1>Orders Management</h1>
             </div>
 
             <div className="table-container">
@@ -80,92 +108,63 @@ export default function OrderList() {
                             <th>ID</th>
                             <th>Customer</th>
                             <th>Total Amount</th>
-                            <th>Total Payment</th>
+                            <th>Payment</th>
                             <th>Status</th>
                             <th>Type</th>
-                            <th>Order Date</th>
+                            <th>Date</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {orders.map((order) => (
                             <tr key={order.PK_POSOrder}>
-                                <td>{order.PK_POSOrder}</td>
+                                <td><b>#{order.PK_POSOrder}</b></td>
                                 <td>{getCustomerName(order.CustomerID)}</td>
-                                <td>${order.Total_Amount}</td>
+                                <td style={{ color: '#059669', fontWeight: 600 }}>${order.Total_Amount}</td>
                                 <td>${order.Total_Payment}</td>
                                 <td>
-                                    {editingStatus?.orderId === order.PK_POSOrder ? (
-                                        <select
-                                            value={editingStatus.status}
-                                            onChange={(e) =>
-                                                setEditingStatus({
-                                                    orderId: order.PK_POSOrder,
-                                                    status: e.target.value,
-                                                })
-                                            }
-                                            onBlur={() =>
-                                                handleStatusChange(
-                                                    editingStatus.orderId,
-                                                    editingStatus.status
-                                                )
-                                            }
-                                            autoFocus
-                                            style={{
-                                                padding: '4px 8px',
-                                                borderRadius: '4px',
-                                                border: '1px solid #ddd',
-                                            }}
-                                        >
-                                            <option value="pending">Pending</option>
-                                            <option value="processing">Processing</option>
-                                            <option value="COMPLETED">Completed</option>
-                                            <option value="CANCELLED">Cancelled</option>
-                                        </select>
-                                    ) : (
-                                        <span
-                                            onClick={() =>
-                                                setEditingStatus({
-                                                    orderId: order.PK_POSOrder,
-                                                    status: order.Status,
-                                                })
-                                            }
-                                            style={{
-                                                padding: '4px 8px',
-                                                borderRadius: '4px',
-                                                backgroundColor:
-                                                    order.Status === 'COMPLETED'
-                                                        ? '#27ae60'
-                                                        : order.Status === 'CANCELLED'
-                                                            ? '#e74c3c'
-                                                            : '#f39c12',
-                                                color: 'white',
-                                                fontSize: '12px',
-                                                cursor: 'pointer',
-                                            }}
-                                        >
-                                            {order.Status}
-                                        </span>
-                                    )}
+                                    <span className={`status-badge status-${order.Status.toLowerCase()}`}>
+                                        {order.Status}
+                                    </span>
                                 </td>
                                 <td>{order.Type_Order}</td>
-                                <td>{order.Order_Date ? new Date(order.Order_Date).toLocaleString() : 'N/A'}</td>
+                                <td style={{ fontSize: '13px', color: '#6b7280' }}>
+                                    {order.Order_Date ? new Date(order.Order_Date as string).toLocaleDateString() : 'N/A'}
+                                </td>
                                 <td>
                                     <div className="action-buttons">
-                                        {order.Status !== 'CANCELLED' && (
-                                            <button
-                                                onClick={() => handleCancel(order.PK_POSOrder)}
-                                                className="btn-edit"
-                                            >
-                                                Cancel
-                                            </button>
-                                        )}
                                         <button
-                                            onClick={() => handleDelete(order.PK_POSOrder)}
-                                            className="btn-delete"
+                                            onClick={() => handleShowDetail(order.PK_POSOrder)}
+                                            className="btn-detail"
+                                            title="View Detail"
                                         >
-                                            Delete
+                                            Detail
                                         </button>
+                                        {(order.Status !== 'CANCELLED' && order.Status !== 'COMPLETED') && (
+                                            <>
+                                                <button
+                                                    onClick={() => handleStatusChange(order.PK_POSOrder, 'processing')}
+                                                    className="btn-edit"
+                                                    title="Mark as Processing"
+                                                >
+                                                    Process
+                                                </button>
+                                                <button
+                                                    onClick={() => handleStatusChange(order.PK_POSOrder, 'COMPLETED')}
+                                                    style={{ backgroundColor: '#ecfdf5', color: '#059669', border: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: 500, cursor: 'pointer' }}
+                                                    title="Mark as Completed"
+                                                >
+                                                    Complete
+                                                </button>
+                                                <button
+                                                    onClick={() => handleCancel(order.PK_POSOrder)}
+                                                    className="btn-delete"
+                                                    title="Cancel Order"
+                                                >
+                                                    Cancel
+                                                </button>
+                                            </>
+                                        )}
                                     </div>
                                 </td>
                             </tr>
@@ -173,6 +172,79 @@ export default function OrderList() {
                     </tbody>
                 </table>
             </div>
+
+            {/* Order Detail Modal */}
+            {selectedOrder !== null && (
+                <div className="modal-overlay" onClick={handleCloseDetail}>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '700px' }}>
+                        <h2>Order Detail #{selectedOrder.PK_POSOrder}</h2>
+
+                        {!selectedOrder.order_lines && detailLoading ? (
+                            <div className="loading">Loading details...</div>
+                        ) : (
+                            <>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px', background: '#f9fafb', padding: '16px', borderRadius: '8px' }}>
+                                    <div>
+                                        <small style={{ color: '#6b7280', textTransform: 'uppercase', fontSize: '11px', fontWeight: 700 }}>Customer</small>
+                                        <div style={{ fontWeight: 500 }}>{getCustomerName(selectedOrder.CustomerID)}</div>
+                                    </div>
+                                    <div>
+                                        <small style={{ color: '#6b7280', textTransform: 'uppercase', fontSize: '11px', fontWeight: 700 }}>Date</small>
+                                        <div>{selectedOrder.Order_Date ? new Date(selectedOrder.Order_Date as string).toLocaleString() : 'N/A'}</div>
+                                    </div>
+                                    <div>
+                                        <small style={{ color: '#6b7280', textTransform: 'uppercase', fontSize: '11px', fontWeight: 700 }}>Status</small>
+                                        <div>
+                                            <span className={`status-badge status-${(selectedOrder.Status || '').toLowerCase()}`}>
+                                                {selectedOrder.Status}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <small style={{ color: '#6b7280', textTransform: 'uppercase', fontSize: '11px', fontWeight: 700 }}>Total Amount</small>
+                                        <div style={{ color: '#059669', fontWeight: 700, fontSize: '18px' }}>${selectedOrder.Total_Amount}</div>
+                                    </div>
+                                </div>
+
+                                <h3 style={{ fontSize: '16px', marginBottom: '12px' }}>Order Items</h3>
+                                {(!selectedOrder.order_lines || selectedOrder.order_lines.length === 0) ? (
+                                    <div style={{ color: '#6b7280', fontStyle: 'italic' }}>No products in this order.</div>
+                                ) : (
+                                    <div className="table-container" style={{ boxShadow: 'none', border: '1px solid #e5e7eb' }}>
+                                        <table>
+                                            <thead>
+                                                <tr>
+                                                    <th>Item</th>
+                                                    <th style={{ textAlign: 'center' }}>Qty</th>
+                                                    <th style={{ textAlign: 'right' }}>Price</th>
+                                                    <th style={{ textAlign: 'right' }}>Total</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {selectedOrder.order_lines.map((line: OrderLine) => (
+                                                    <tr key={line.PK_OrderLine}>
+                                                        <td>
+                                                            <div style={{ fontWeight: 600 }}>{line.VariationName || `Var #${line.VariationID}`}</div>
+                                                            <small style={{ color: '#6b7280' }}>ID: {line.PK_OrderLine}</small>
+                                                        </td>
+                                                        <td style={{ textAlign: 'center' }}>{line.Quantity}</td>
+                                                        <td style={{ textAlign: 'right' }}>${line.Unit_Price}</td>
+                                                        <td style={{ textAlign: 'right', fontWeight: 600 }}>${line.Price}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
+                            </>
+                        )}
+
+                        <div className="modal-actions">
+                            <button onClick={handleCloseDetail} className="btn-secondary">Close</button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

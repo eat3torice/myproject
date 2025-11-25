@@ -16,6 +16,7 @@ import Shop from './pages/user/Shop';
 import Cart from './pages/user/Cart';
 import Orders from './pages/user/Orders';
 import Profile from './pages/user/Profile';
+import OrderDetail from './pages/user/OrderDetail';
 import './App.css';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -46,6 +47,7 @@ function App() {
         <Route path="/shop" element={<Shop />} />
         <Route path="/cart" element={<UserProtectedRoute><Cart /></UserProtectedRoute>} />
         <Route path="/orders" element={<UserProtectedRoute><Orders /></UserProtectedRoute>} />
+        <Route path="/orders/:orderId" element={<UserProtectedRoute><OrderDetail /></UserProtectedRoute>} />
         <Route path="/profile" element={<UserProtectedRoute><Profile /></UserProtectedRoute>} />
 
         {/* Admin routes */}

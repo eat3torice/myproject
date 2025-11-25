@@ -1,5 +1,6 @@
 import api from '../config/api';
 import type { Order } from '../types';
+import type { OrderDetail } from '../types/order';
 
 export const orderService = {
     getAll: async (skip: number = 0, limit: number = 100): Promise<Order[]> => {
@@ -29,5 +30,14 @@ export const orderService = {
 
     delete: async (id: number): Promise<void> => {
         await api.delete(`/admin/orders/${id}`);
+    },
+    getDetail: async (id: number): Promise<OrderDetail> => {
+        const response = await api.get(`/admin/orders/${id}/lines`);
+        // Compose with order info
+        const orderRes = await api.get(`/admin/orders/${id}`);
+        return {
+            ...orderRes.data,
+            order_lines: response.data,
+        };
     },
 };

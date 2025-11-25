@@ -1,3 +1,5 @@
+/* --- START OF FILE Orders.tsx --- */
+
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { userService } from '../../services/userService';
@@ -23,7 +25,8 @@ export default function Orders() {
     const loadOrders = async () => {
         try {
             const data = await userService.getOrders();
-            setOrders(data);
+            // Sắp xếp đơn mới nhất lên đầu
+            setOrders(data.sort((a: any, b: any) => b.PK_POSOrder - a.PK_POSOrder));
         } catch (error) {
             console.error('Error loading orders:', error);
         } finally {
@@ -31,13 +34,25 @@ export default function Orders() {
         }
     };
 
-    if (loading) return <div className="loading">Loading orders...</div>;
+    const handleCancel = async (orderId: number) => {
+        if (!confirm('Are you sure you want to cancel this order?')) return;
+        try {
+            await userService.cancelOrder(orderId);
+            await loadOrders();
+            alert('Order cancelled successfully');
+        } catch (error: any) {
+            alert(error.response?.data?.detail || 'Failed to cancel order');
+        }
+    };
+
+    if (loading) return <div className="loading-container">Loading your orders...</div>;
 
     return (
         <div className="orders-container">
             <header className="orders-header">
                 <Link to="/shop" className="back-link">
-                    ← Back to Shop
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                    Back to Shop
                 </Link>
                 <h1>My Orders</h1>
             </header>
@@ -45,7 +60,9 @@ export default function Orders() {
             <main className="orders-main">
                 {orders.length === 0 ? (
                     <div className="no-orders">
-                        <p>You haven't placed any orders yet</p>
+                        <div style={{ fontSize: '48px' }}>📦</div>
+                        <h3>No orders yet</h3>
+                        <p style={{ color: '#6b7280' }}>Looks like you haven't made your choice yet.</p>
                         <Link to="/shop" className="btn-shop">
                             Start Shopping
                         </Link>
@@ -54,32 +71,54 @@ export default function Orders() {
                     <div className="orders-list">
                         {orders.map((order) => (
                             <div key={order.PK_POSOrder} className="order-card">
-                                <div className="order-header">
-                                    <span className="order-id">Order #{order.PK_POSOrder}</span>
-                                    <span
-                                        className={`order-status status-${order.Status.toLowerCase()}`}
-                                    >
+                                {/* Top: ID, Date, Status */}
+                                <div className="order-header-row">
+                                    <div className="order-id-group">
+                                        <span className="order-id">Order #{order.PK_POSOrder}</span>
+                                        <span className="order-date">
+                                            {order.Order_Date
+                                                ? new Date(order.Order_Date).toLocaleDateString('en-US', {
+                                                    year: 'numeric',
+                                                    month: 'long',
+                                                    day: 'numeric',
+                                                    hour: '2-digit',
+                                                    minute: '2-digit'
+                                                })
+                                                : 'Date N/A'}
+                                        </span>
+                                    </div>
+                                    <span className={`order-status status-${order.Status.toLowerCase()}`}>
                                         {order.Status}
                                     </span>
                                 </div>
-                                <div className="order-details">
-                                    <div className="detail-row">
-                                        <span>Date:</span>
-                                        <span>
-                                            {order.Order_Date
-                                                ? new Date(order.Order_Date).toLocaleDateString()
-                                                : 'N/A'}
-                                        </span>
+
+                                {/* Middle: Details */}
+                                <div className="order-body">
+                                    <div className="info-group">
+                                        <span className="label">Type</span>
+                                        <span className="value">{order.Type_Order}</span>
                                     </div>
-                                    <div className="detail-row">
-                                        <span>Total Amount:</span>
-                                        <span className="amount">
+                                    <div className="info-group">
+                                        <span className="label">Total Amount</span>
+                                        <span className="value amount">
                                             ${Number(order.Total_Amount).toFixed(2)}
                                         </span>
                                     </div>
-                                    <div className="detail-row">
-                                        <span>Type:</span>
-                                        <span>{order.Type_Order}</span>
+
+                                    {/* Bottom: Actions */}
+                                    <div className="order-actions">
+                                        {(order.Status.toUpperCase() !== 'CANCELLED' && order.Status.toUpperCase() !== 'COMPLETED') && (
+                                            <button
+                                                className="btn-cancel"
+                                                onClick={() => handleCancel(order.PK_POSOrder)}
+                                                title="Cancel Order"
+                                            >
+                                                Cancel
+                                            </button>
+                                        )}
+                                        <Link to={`/orders/${order.PK_POSOrder}`} className="btn-detail">
+                                            View Details
+                                        </Link>
                                     </div>
                                 </div>
                             </div>

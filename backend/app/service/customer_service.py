@@ -47,11 +47,12 @@ class CustomerService:
         self.db.refresh(customer)
         return customer
 
-    def delete_customer(self, customer_id: int):
+    def deactivate_customer(self, customer_id: int):
         customer = self.db.query(Customer).filter(Customer.PK_Customer == customer_id).first()
         if not customer:
             return None
-
-        self.db.delete(customer)
+        customer.Status = "Inactive"
+        customer.Edit_date = datetime.now()
         self.db.commit()
+        self.db.refresh(customer)
         return customer

@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react';
 import { orderService } from '../../services/orderService';
 import { customerService } from '../../services/customerService';
 import { variationService } from '../../services/variationService';
-import type { Customer, Variation } from '../../types';
+import { categoryService } from '../../services/categoryService';
+import { productService } from '../../services/productService';
+import type { Customer, Variation, Category, Product } from '../../types';
 import './POSOrder.css';
 
 interface OrderLine {
@@ -18,6 +20,12 @@ interface CartItem extends OrderLine {
 export default function POSOrder() {
     const [customers, setCustomers] = useState<Customer[]>([]);
     const [variations, setVariations] = useState<Variation[]>([]);
+    const [allVariations, setAllVariations] = useState<Variation[]>([]);
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [products, setProducts] = useState<Product[]>([]);
+    const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+    const [selectedProduct, setSelectedProduct] = useState<number | null>(null);
+    const [searchName, setSearchName] = useState('');
     const [cart, setCart] = useState<CartItem[]>([]);
     const [selectedCustomer, setSelectedCustomer] = useState<number | null>(null);
     const [selectedVariation, setSelectedVariation] = useState<number>(0);
@@ -30,20 +38,45 @@ export default function POSOrder() {
         loadData();
     }, []);
 
+    useEffect(() => {
+        filterVariations();
+    }, [allVariations, selectedCategory, selectedProduct, searchName]);
+
     const loadData = async () => {
         try {
-            const [customersData, variationsData] = await Promise.all([
+            const [customersData, variationsData, categoriesData, productsData] = await Promise.all([
                 customerService.getAll(0, 100),
-                variationService.getAll(0, 100),
+                variationService.getAll(0, 200),
+                categoryService.getAll(),
+                productService.getAll(0, 100),
             ]);
             setCustomers(customersData);
-            setVariations(variationsData.filter((v) => v.Quantity > 0));
+            setAllVariations(variationsData);
+            setCategories(categoriesData);
+            setProducts(productsData);
         } catch (error) {
             console.error('Error loading data:', error);
             alert('Failed to load data');
         } finally {
             setLoading(false);
         }
+    };
+
+    const filterVariations = () => {
+        let filtered = [...allVariations];
+        if (selectedCategory) {
+            filtered = filtered.filter(v => {
+                const prod = products.find(p => p.PK_Product === v.ProductID);
+                return prod && prod.CategoryID === selectedCategory;
+            });
+        }
+        if (selectedProduct) {
+            filtered = filtered.filter(v => v.ProductID === selectedProduct);
+        }
+        if (searchName.trim()) {
+            filtered = filtered.filter(v => v.Name.toLowerCase().includes(searchName.trim().toLowerCase()));
+        }
+        setVariations(filtered.filter(v => v.Quantity > 0));
     };
 
     const addToCart = () => {
@@ -159,13 +192,44 @@ export default function POSOrder() {
         <div className="pos-container">
             <div className="pos-left">
                 <h2>Select Products</h2>
+                <div className="filter-bar" style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
+                    <input
+                        type="text"
+                        value={searchName}
+                        onChange={e => setSearchName(e.target.value)}
+                        placeholder="Search by name..."
+                        style={{ padding: '8px', minWidth: 160 }}
+                    />
+                    <select
+                        value={selectedCategory || ''}
+                        onChange={e => setSelectedCategory(e.target.value ? parseInt(e.target.value) : null)}
+                        style={{ padding: '8px', minWidth: 120 }}
+                    >
+                        <option value="">All Categories</option>
+                        {categories.map(cat => (
+                            <option key={cat.PK_Category} value={cat.PK_Category}>{cat.Name}</option>
+                        ))}
+                    </select>
+                    <select
+                        value={selectedProduct || ''}
+                        onChange={e => setSelectedProduct(e.target.value ? parseInt(e.target.value) : null)}
+                        style={{ padding: '8px', minWidth: 120 }}
+                    >
+                        <option value="">All Products</option>
+                        {products
+                            .filter(p => !selectedCategory || p.CategoryID === selectedCategory)
+                            .map(prod => (
+                                <option key={prod.PK_Product} value={prod.PK_Product}>{prod.Name}</option>
+                            ))}
+                    </select>
+                </div>
                 <div className="product-selector">
                     <select
                         value={selectedVariation}
                         onChange={(e) => setSelectedVariation(parseInt(e.target.value))}
                         className="select-variation"
                     >
-                        <option value={0}>Select Product</option>
+                        <option value={0}>Select Variation</option>
                         {variations.map((variation) => (
                             <option key={variation.PK_Variation} value={variation.PK_Variation}>
                                 {variation.Name} - ${variation.Price} (Stock: {variation.Quantity})

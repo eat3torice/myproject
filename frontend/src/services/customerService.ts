@@ -22,7 +22,7 @@ export const customerService = {
         return response.data;
     },
 
-    delete: async (id: number): Promise<void> => {
-        await api.delete(`/admin/customers/${id}`);
+    deactivate: async (id: number): Promise<void> => {
+        await api.put(`/admin/customers/${id}/deactivate`);
     },
 };

@@ -38,4 +38,16 @@ export const userService = {
         const response = await api.post('/user/orders', orderData);
         return response.data;
     },
+    getOrderDetail: async (orderId: number) => {
+        const response = await api.get(`/user/orders/${orderId}`);
+        return response.data;
+    },
+    getOrderItems: async (orderId: number) => {
+        const response = await api.get(`/user/orders/${orderId}/items`);
+        return response.data;
+    },
+    cancelOrder: async (orderId: number) => {
+        const response = await api.post(`/user/orders/${orderId}/cancel`);
+        return response.data;
+    },
 };

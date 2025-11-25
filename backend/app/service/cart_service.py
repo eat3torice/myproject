@@ -54,7 +54,7 @@ class CartService:
             return cart_item
 
     def update_cart_item(self, cart_item_id: int, customer_id: int, quantity: int):
-        """Cập nhật số lượng trong giỏ hàng"""
+        """Cập nhật số lượng trong giỏ hàng, kiểm tra tồn kho"""
         cart_item = (
             self.db.query(CartItem)
             .filter(CartItem.PK_CartItem == cart_item_id, CartItem.Customer_id == customer_id)
@@ -64,8 +64,19 @@ class CartService:
         if not cart_item:
             return None
 
+        # Lấy variation từ cart_variation
+        cart_var = self.db.query(CartVariation).filter(CartVariation.CartItemID == cart_item_id).first()
+        if not cart_var:
+            return None
+        variation = self.db.query(Variation).filter(Variation.PK_Variation == cart_var.VariationID).first()
+        if not variation:
+            return None
+
+        if quantity > variation.Quantity:
+            from fastapi import HTTPException
+            raise HTTPException(status_code=400, detail="Not enough stock")
+
         if quantity <= 0:
-            # Remove from cart
             self.db.delete(cart_item)
         else:
             cart_item.Quantity = quantity

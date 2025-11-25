@@ -61,13 +61,13 @@ export default function CustomerList() {
         setShowModal(true);
     };
 
-    const handleDelete = async (id: number) => {
-        if (!confirm('Are you sure you want to delete this customer?')) return;
+    const handleDeactivate = async (id: number) => {
+        if (!confirm('Are you sure you want to deactivate this customer?')) return;
         try {
-            await customerService.delete(id);
+            await customerService.deactivate(id);
             loadData();
         } catch (error) {
-            alert('Failed to delete customer');
+            alert('Failed to deactivate customer');
         }
     };
 
@@ -125,10 +125,10 @@ export default function CustomerList() {
                                             Edit
                                         </button>
                                         <button
-                                            onClick={() => handleDelete(customer.PK_Customer)}
+                                            onClick={() => handleDeactivate(customer.PK_Customer)}
                                             className="btn-delete"
                                         >
-                                            Delete
+                                            Deactivate
                                         </button>
                                     </div>
                                 </td>
@@ -151,6 +151,16 @@ export default function CustomerList() {
                                     onChange={(e) => setFormData({ ...formData, Name: e.target.value })}
                                     required
                                 />
+                            </div>
+                            <div className="form-group">
+                                <label>Status</label>
+                                <select
+                                    value={formData.Status}
+                                    onChange={(e) => setFormData({ ...formData, Status: e.target.value })}
+                                >
+                                    <option value="ACTIVE">Active</option>
+                                    <option value="Inactive">Inactive</option>
+                                </select>
                             </div>
                             <div className="form-group">
                                 <label>Phone</label>
@@ -176,16 +186,7 @@ export default function CustomerList() {
                                     rows={3}
                                 />
                             </div>
-                            <div className="form-group">
-                                <label>Status</label>
-                                <select
-                                    value={formData.Status}
-                                    onChange={(e) => setFormData({ ...formData, Status: e.target.value })}
-                                >
-                                    <option value="ACTIVE">Active</option>
-                                    <option value="INACTIVE">Inactive</option>
-                                </select>
-                            </div>
+                           
                             <div className="modal-actions">
                                 <button type="submit" className="btn-primary">
                                     {editingCustomer ? 'Update' : 'Create'}

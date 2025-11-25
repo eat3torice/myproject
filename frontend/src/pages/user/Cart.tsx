@@ -33,6 +33,7 @@ export default function Cart() {
         }
     };
 
+
     const handleUpdateQuantity = async (cartItemId: number, newQuantity: number) => {
         if (newQuantity <= 0) {
             handleRemove(cartItemId);
@@ -41,8 +42,20 @@ export default function Cart() {
         try {
             await cartService.updateQuantity(cartItemId, newQuantity);
             loadCart();
-        } catch (error) {
-            alert('Failed to update quantity');
+        } catch (error: any) {
+            let errorMsg = 'Failed to update quantity';
+            if (error.response) {
+                // Có phản hồi từ backend
+                errorMsg = error.response.data?.detail || error.message || errorMsg;
+                if (typeof errorMsg === 'string' && errorMsg.toLowerCase().includes('stock')) {
+                    alert('Số lượng vượt quá tồn kho!');
+                } else {
+                    alert(errorMsg);
+                }
+            } else {
+                // Không có phản hồi (network error)
+                alert('Không thể kết nối tới server. Vui lòng thử lại hoặc kiểm tra mạng.');
+            }
         }
     };
 

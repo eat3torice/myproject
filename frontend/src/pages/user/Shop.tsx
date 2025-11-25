@@ -31,11 +31,16 @@ export default function Shop() {
     const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [cartVariations, setCartVariations] = useState<number[]>([]);
     const navigate = useNavigate();
 
     useEffect(() => {
         loadProducts();
         loadCategories();
+        // load cart items to prevent duplicate adds
+        if (localStorage.getItem('token')) {
+            loadCart();
+        }
     }, []);
 
     useEffect(() => {
@@ -74,6 +79,16 @@ export default function Shop() {
         }
     };
 
+    const loadCart = async () => {
+        try {
+            const items = await cartService.getCart();
+            const variationIds = items.map((i: any) => i.VariationID).filter((v: any) => v !== undefined && v !== null);
+            setCartVariations(variationIds);
+        } catch (error) {
+            // ignore errors (user may not be logged in)
+        }
+    };
+
     const handleSearch = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!searchTerm.trim()) {
@@ -96,8 +111,16 @@ export default function Shop() {
             return;
         }
 
+        // Prevent duplicate adds on frontend
+        if (cartVariations.includes(variationId)) {
+            alert('Sản phẩm đã được thêm vào giỏ hàng rồi');
+            return;
+        }
+
         try {
             await cartService.addItem(variationId, 1);
+            // update local set so subsequent clicks won't add again
+            setCartVariations((prev) => [...prev, variationId]);
             alert('Added to cart!');
         } catch (error: any) {
             if (error.response?.status === 401) {

@@ -1,0 +1,9 @@
+services:
+  - type: static
+    name: react-frontend
+    env: static
+    repo: https://github.com/eat3torice/myproject
+    branch: main
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: frontend/dist
+    autoDeploy: true

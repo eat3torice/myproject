@@ -44,11 +44,12 @@ def update_customer(customer_id: int, customer: CustomerUpdate, db: Session = De
     return updated
 
 
-@router.delete("/{customer_id}")
-def delete_customer(customer_id: int, db: Session = Depends(get_db)):
-    """Xóa khách hàng"""
+
+# Deactivate customer (set status to Inactive)
+@router.put("/{customer_id}/deactivate")
+def deactivate_customer(customer_id: int, db: Session = Depends(get_db)):
     service = CustomerService(db)
-    deleted = service.delete_customer(customer_id)
-    if not deleted:
+    updated = service.deactivate_customer(customer_id)
+    if not updated:
         raise HTTPException(status_code=404, detail="Customer not found")
-    return {"message": "Customer deleted successfully"}
+    return {"message": "Customer deactivated successfully"}

@@ -18,6 +18,7 @@ class OrderLineResponse(BaseModel):
     PK_OrderLine: int
     OrderID: int
     VariationID: Optional[int]
+    VariationName: Optional[str] = None
     Quantity: int
     Unit_Price: Decimal
     Price: Decimal

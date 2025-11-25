@@ -1,0 +1,125 @@
+/* --- START OF FILE OrderDetail.css --- */
+
+.order-detail-card {
+    background: var(--bg-card);
+    border-radius: 16px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+    margin-bottom: 40px;
+    animation: fadeIn 0.4s ease-out;
+}
+
+.order-detail-header-section {
+    padding: 32px;
+    background: white;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 24px;
+    margin-top: 20px;
+}
+
+.detail-item label {
+    display: block;
+    font-size: 12px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin-bottom: 6px;
+    letter-spacing: 0.5px;
+}
+
+.detail-item div {
+    font-size: 16px;
+    color: var(--text-main);
+    font-weight: 500;
+}
+
+.detail-amount {
+    font-size: 24px !important;
+    font-weight: 700 !important;
+    color: var(--primary-color) !important;
+}
+
+/* Table Section */
+.order-products-section {
+    padding: 32px;
+    background: #f9fafb;
+}
+
+.section-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 20px;
+    margin-top: 0;
+}
+
+.table-responsive {
+    overflow-x: auto;
+    background: white;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.order-lines-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px;
+}
+
+.order-lines-table th {
+    background: #f9fafb;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    padding: 16px 20px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.order-lines-table td {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-main);
+    font-size: 15px;
+    vertical-align: middle;
+}
+
+.order-lines-table tr:last-child td {
+    border-bottom: none;
+}
+
+.order-lines-table tr:hover td {
+    background-color: #fdfdfd;
+}
+
+.text-right {
+    text-align: right;
+}
+
+/* Cancel Button in Detail */
+.action-bar {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px dashed var(--border-color);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

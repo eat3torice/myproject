@@ -1,3 +1,28 @@
+# Node
+node_modules/
+dist/
+build/
+
+# Python
+venv/
+.env
+__pycache__/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+*.DS_Store
+Thumbs.db
+
+# Log
+*.log
+
+# Others
+*.sqlite3
+*.bak
+*.tmp
 # Logs
 logs
 *.log

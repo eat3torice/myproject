@@ -20,7 +20,17 @@ class OrderService:
         return query.order_by(POSOrder.Creation_date.desc()).offset(skip).limit(limit).all()
 
     def get_order_by_id(self, order_id: int):
-        return self.db.query(POSOrder).filter(POSOrder.PK_POSOrder == order_id).first()
+        order = self.db.query(POSOrder).filter(POSOrder.PK_POSOrder == order_id).first()
+        if not order:
+            return None
+        # Sync order line status if order is cancelled or completed
+        if order.Status and order.Status.upper() in ["CANCELLED", "COMPLETED"]:
+            order_lines = self.db.query(OrderLine).filter(OrderLine.OrderID == order_id).all()
+            for line in order_lines:
+                if line.Status.upper() != order.Status.upper():
+                    line.Status = order.Status.upper()
+            self.db.commit()
+        return order
 
     def create_order(self, order_data: OrderCreate):
         # Calculate totals
@@ -72,6 +82,9 @@ class OrderService:
         order = self.db.query(POSOrder).filter(POSOrder.PK_POSOrder == order_id).first()
         if not order:
             return None
+        # Prevent status update if order is cancelled or completed
+        if order.Status and order.Status.upper() in ["CANCELLED", "COMPLETED"]:
+            return None
 
         for key, value in order_data.dict(exclude_unset=True).items():
             setattr(order, key, value)
@@ -83,7 +96,7 @@ class OrderService:
     def cancel_order(self, order_id: int):
         """Cancel order and restore inventory"""
         order = self.db.query(POSOrder).filter(POSOrder.PK_POSOrder == order_id).first()
-        if not order or order.Status == "cancelled":
+        if not order or order.Status == "CANCELLED":
             return None
 
         # Restore inventory
@@ -94,15 +107,35 @@ class OrderService:
                 if variation:
                     variation.Quantity += line.Quantity
                     variation.Sold -= line.Quantity
-            line.Status = "cancelled"
-
-        order.Status = "cancelled"
+            line.Status = "CANCELLED"
+        order.Status = "CANCELLED"
         self.db.commit()
         self.db.refresh(order)
         return order
 
     def get_order_lines(self, order_id: int):
-        return self.db.query(OrderLine).filter(OrderLine.OrderID == order_id).all()
+        order_lines = self.db.query(OrderLine).filter(OrderLine.OrderID == order_id).all()
+        result = []
+        for line in order_lines:
+            variation_name = None
+            if line.VariationID:
+                variation = self.db.query(Variation).filter(Variation.PK_Variation == line.VariationID).first()
+                if variation:
+                    variation_name = variation.Name
+            # Use mapped attribute names, not column names
+            line_dict = {
+                'PK_OrderLine': line.PK_OrderLine,
+                'OrderID': line.OrderID,
+                'VariationID': line.VariationID,
+                'Quantity': line.Quantity,
+                'Unit_Price': line.Unit_Price,
+                'Price': line.Price,
+                'Status': line.Status,
+                'Creation_date': line.Creation_date,
+                'VariationName': variation_name,
+            }
+            result.append(line_dict)
+        return result
 
     def get_order_statistics(self, start_date: datetime = None, end_date: datetime = None):
         """Get order statistics for reporting"""
@@ -116,8 +149,8 @@ class OrderService:
         orders = query.all()
 
         total_orders = len(orders)
-        total_revenue = sum(order.Total_Amount for order in orders if order.Status != "cancelled")
-        completed_orders = len([o for o in orders if o.Status == "completed"])
+        total_revenue = sum(order.Total_Amount for order in orders if order.Status != "CANCELLED")
+        completed_orders = len([o for o in orders if o.Status == "COMPLETED"])
 
         return {
             "total_orders": total_orders,
