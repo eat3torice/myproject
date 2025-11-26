@@ -16,3 +16,4 @@ build/
 
 # Others
 .DS_Store
+backend/.venv/

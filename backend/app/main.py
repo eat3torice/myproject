@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 # ✅ Cấu hình bảo mật cho Swagger
 from fastapi.openapi.utils import get_openapi
@@ -14,6 +15,7 @@ from app.router import (
     category_router,
     customer_router,
     employee_router,
+    images_router,
     order_router,
     product_router,
     public_router,
@@ -33,6 +35,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Serve static files
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 # ✅ Tạo bảng DB
 Base.metadata.create_all(bind=engine)
 
@@ -45,6 +50,7 @@ app.include_router(product_router.router)
 app.include_router(category_router.router)
 app.include_router(brand_router.router)
 app.include_router(variation_router.router)
+app.include_router(images_router.router)
 app.include_router(customer_router.router)
 app.include_router(employee_router.router)
 app.include_router(order_router.router)

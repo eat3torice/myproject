@@ -17,6 +17,7 @@ import Cart from './pages/user/Cart';
 import Orders from './pages/user/Orders';
 import Profile from './pages/user/Profile';
 import OrderDetail from './pages/user/OrderDetail';
+import VariationDetail from './pages/user/VariationDetail';
 import './App.css';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -49,6 +50,7 @@ function App() {
         <Route path="/orders" element={<UserProtectedRoute><Orders /></UserProtectedRoute>} />
         <Route path="/orders/:orderId" element={<UserProtectedRoute><OrderDetail /></UserProtectedRoute>} />
         <Route path="/profile" element={<UserProtectedRoute><Profile /></UserProtectedRoute>} />
+        <Route path="/variation/:id" element={<VariationDetail />} />
 
         {/* Admin routes */}
         <Route

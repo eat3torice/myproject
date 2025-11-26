@@ -17,6 +17,13 @@ export default function AdminLogin() {
 
         try {
             const response = await authService.login({ username, password });
+
+            // Check if user has admin role (role_id = 1)
+            if (response.role_id !== 1) {
+                setError('Access denied. Admin privileges required.');
+                return;
+            }
+
             authService.setToken(response.access_token);
             navigate('/admin');
         } catch (err: any) {

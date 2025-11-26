@@ -72,8 +72,8 @@
 /* Grid of Cards */
 .product-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
     overflow-y: auto;
     padding-bottom: 20px;
     padding-right: 4px;
@@ -84,13 +84,13 @@
     background: white;
     border: 1px solid var(--border);
     border-radius: 12px;
-    padding: 16px;
+    padding: 12px;
     cursor: pointer;
     transition: all 0.2s;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    height: 120px;
+    height: 80px;
     position: relative;
     overflow: hidden;
 }

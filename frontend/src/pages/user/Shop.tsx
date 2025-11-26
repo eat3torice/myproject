@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { publicProductService } from '../../services/publicProductService';
 import { categoryService } from '../../services/categoryService';
 import { cartService } from '../../services/cartService';
+import { imagesService } from '../../services/imagesService';
+import { API_BASE_URL } from '../../config/api';
 import './Shop.css';
 
 interface ProductVariation {
@@ -25,6 +27,14 @@ interface Category {
     Description?: string;
 }
 
+interface Image {
+    PK_Images: number;
+    ProductID?: number;
+    VariationID?: number;
+    Id_Image: string;
+    Set_Default: boolean;
+}
+
 export default function Shop() {
     const [products, setProducts] = useState<ProductVariation[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
@@ -32,6 +42,7 @@ export default function Shop() {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [cartVariations, setCartVariations] = useState<number[]>([]);
+    const [productImages, setProductImages] = useState<{ [key: number]: Image[] }>({});
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -56,10 +67,25 @@ export default function Shop() {
         }
     };
 
+    const loadImages = async (variations: ProductVariation[]) => {
+        const imagesMap: { [key: number]: Image[] } = {};
+        for (const variation of variations) {
+            try {
+                const images = await imagesService.getImagesByVariation(variation.PK_Variation);
+                imagesMap[variation.PK_Variation] = images;
+            } catch (error) {
+                console.error(`Error loading images for variation ${variation.PK_Variation}:`, error);
+                imagesMap[variation.PK_Variation] = [];
+            }
+        }
+        setProductImages(imagesMap);
+    };
+
     const loadProducts = async () => {
         try {
             const data = await publicProductService.getAll(0, 50);
             setProducts(data);
+            await loadImages(data);
         } catch (error) {
             console.error('Error loading products:', error);
         } finally {
@@ -72,6 +98,7 @@ export default function Shop() {
         try {
             const data = await publicProductService.getByCategory(selectedCategory || undefined, 0, 50);
             setProducts(data);
+            await loadImages(data);
         } catch (error) {
             console.error('Error loading products by category:', error);
         } finally {
@@ -198,33 +225,64 @@ export default function Shop() {
                 <div className="shop-content">
                     <h2>Products</h2>
                     <div className="product-grid">
-                        {products.map((product) => (
-                            <div key={product.PK_Variation} className="product-card">
-                                <div className="product-image">
-                                    <div className="placeholder-image">No Image</div>
-                                </div>
-                                <div className="product-info">
+                        {products.map((product) => {
+                            const images = productImages[product.PK_Variation] || [];
+                            const defaultImage = images.find(img => img.Set_Default) || images[0];
+                            const imageUrl = defaultImage ?
+                                (defaultImage.Id_Image.startsWith('/static/') ?
+                                    `${API_BASE_URL}${defaultImage.Id_Image}` :
+                                    `${API_BASE_URL}/static/images/${defaultImage.Id_Image}`) :
+                                '';
+
+                            return (
+                                <div key={product.PK_Variation} className="product-card">
                                     <h3 className="product-title">{product.Name}</h3>
-                                    {product.Color && (
-                                        <p className="product-detail">Color: {product.Color}</p>
-                                    )}
-                                    {product.Size && (
-                                        <p className="product-detail">Size: {product.Size}</p>
-                                    )}
-                                    <p className="product-price">${Number(product.Price).toFixed(2)}</p>
-                                    <p className="product-stock">
-                                        {product.Quantity > 0 ? `In stock: ${product.Quantity}` : 'Out of stock'}
-                                    </p>
-                                    <button
-                                        className="btn-add-cart"
-                                        onClick={() => handleAddToCart(product.PK_Variation)}
-                                        disabled={product.Quantity === 0}
-                                    >
-                                        Add to Cart
-                                    </button>
+                                    <div className="product-image" onClick={() => navigate(`/variation/${product.PK_Variation}`)} style={{ cursor: 'pointer' }}>
+                                        {defaultImage ? (
+                                            <img
+                                                src={imageUrl}
+                                                alt={product.Name}
+                                                style={{
+                                                    width: '100%',
+                                                    height: '100%',
+                                                    objectFit: 'cover',
+                                                    position: 'relative',
+                                                    zIndex: 1
+                                                }}
+                                                onError={(e) => {
+                                                    const target = e.target as HTMLImageElement;
+                                                    target.style.display = 'none';
+                                                    const placeholder = target.nextElementSibling as HTMLElement;
+                                                    if (placeholder) placeholder.style.display = 'flex';
+                                                }}
+                                            />
+                                        ) : null}
+                                        <div className="placeholder-image" style={{ display: defaultImage ? 'none' : 'flex' }}>
+                                            No Image
+                                        </div>
+                                    </div>
+                                    <div className="product-info">
+                                        {product.Color && (
+                                            <p className="product-detail">Color: {product.Color}</p>
+                                        )}
+                                        {product.Size && (
+                                            <p className="product-detail">Size: {product.Size}</p>
+                                        )}
+                                        <p className="product-price">${Number(product.Price).toFixed(2)}</p>
+                                        <p className="product-stock">
+                                            {product.Quantity > 0 ? `In stock: ${product.Quantity}` : 'Out of stock'}
+                                        </p>
+                                        <button
+                                            className="btn-add-cart"
+                                            onClick={() => handleAddToCart(product.PK_Variation)}
+                                            disabled={product.Quantity === 0}
+                                        >
+                                            Add to Cart
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                     {products.length === 0 && (
                         <div className="no-products">No products found</div>

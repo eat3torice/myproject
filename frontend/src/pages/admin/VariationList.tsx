@@ -1,8 +1,18 @@
 import { useState, useEffect } from 'react';
 import { variationService } from '../../services/variationService';
 import { productService } from '../../services/productService';
+import { imagesService } from '../../services/imagesService';
+import { API_BASE_URL } from '../../config/api';
 import type { Variation, Product } from '../../types';
 import './Common.css';
+
+interface Image {
+    PK_Images: number;
+    ProductID?: number;
+    VariationID?: number;
+    Id_Image: string;
+    Set_Default: boolean;
+}
 
 export default function VariationList() {
     const [variations, setVariations] = useState<Variation[]>([]);
@@ -10,6 +20,11 @@ export default function VariationList() {
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [editingVariation, setEditingVariation] = useState<Variation | null>(null);
+    const [showUploadModal, setShowUploadModal] = useState(false);
+    const [uploadingVariation, setUploadingVariation] = useState<Variation | null>(null);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [setDefault, setSetDefault] = useState(false);
+    const [productImages, setProductImages] = useState<{ [key: number]: Image[] }>({});
     const [formData, setFormData] = useState({
         ProductID: 0,
         SKU: '',
@@ -35,12 +50,27 @@ export default function VariationList() {
             ]);
             setVariations(variationsData);
             setProducts(productsData);
+            await loadImages(variationsData);
         } catch (error) {
             console.error('Error loading data:', error);
             alert('Failed to load data');
         } finally {
             setLoading(false);
         }
+    };
+
+    const loadImages = async (variations: Variation[]) => {
+        const imagesMap: { [key: number]: Image[] } = {};
+        for (const variation of variations) {
+            try {
+                const images = await imagesService.getImagesByVariationAdmin(variation.PK_Variation);
+                imagesMap[variation.PK_Variation] = images;
+            } catch (error) {
+                console.error(`Error loading images for variation ${variation.PK_Variation}:`, error);
+                imagesMap[variation.PK_Variation] = [];
+            }
+        }
+        setProductImages(imagesMap);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -87,6 +117,66 @@ export default function VariationList() {
         }
     };
 
+    const handleUploadImage = (variation: Variation) => {
+        setUploadingVariation(variation);
+        setSelectedFile(null);
+        setSetDefault(false);
+        setShowUploadModal(true);
+    };
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            setSelectedFile(e.target.files[0]);
+        }
+    };
+
+    const handleUploadSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!selectedFile || !uploadingVariation) return;
+
+        const formDataUpload = new FormData();
+        formDataUpload.append('file', selectedFile);
+
+        try {
+            // Note: This assumes variation_router has upload endpoint
+            // You may need to adjust the API call based on your backend
+            const response = await fetch(`http://127.0.0.1:8000/admin/variations/${uploadingVariation.PK_Variation}/upload-image`, {
+                method: 'POST',
+                body: formDataUpload,
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                },
+            });
+
+            if (response.ok) {
+                alert('Image uploaded successfully');
+                setShowUploadModal(false);
+                loadData(); // Reload to show updated images
+            } else {
+                alert('Failed to upload image');
+            }
+        } catch (error) {
+            console.error('Upload error:', error);
+            alert('Failed to upload image');
+        }
+    };
+
+    const handleDeleteImage = async (imageId: number, variationId: number) => {
+        if (!confirm('Are you sure you want to delete this image?')) return;
+        try {
+            await imagesService.deleteImage(imageId);
+            // Update the local state to remove the deleted image
+            setProductImages(prev => ({
+                ...prev,
+                [variationId]: prev[variationId]?.filter(img => img.PK_Images !== imageId) || []
+            }));
+            alert('Image deleted successfully');
+        } catch (error) {
+            console.error('Delete error:', error);
+            alert('Failed to delete image');
+        }
+    };
+
     const resetForm = () => {
         setFormData({
             ProductID: 0,
@@ -130,6 +220,7 @@ export default function VariationList() {
                         <tr>
                             <th>ID</th>
                             <th>Product</th>
+                            <th>Image</th>
                             <th>SKU</th>
                             <th>Name</th>
                             <th>Price</th>
@@ -141,32 +232,89 @@ export default function VariationList() {
                         </tr>
                     </thead>
                     <tbody>
-                        {variations.map((variation) => (
-                            <tr key={variation.PK_Variation}>
-                                <td>{variation.PK_Variation}</td>
-                                <td>{getProductName(variation.ProductID)}</td>
-                                <td>{variation.SKU}</td>
-                                <td>{variation.Name}</td>
-                                <td>${variation.Price}</td>
-                                <td>{variation.Quantity}</td>
-                                <td>{variation.Color || 'N/A'}</td>
-                                <td>{variation.Size || 'N/A'}</td>
-                                <td>{variation.Status || 'N/A'}</td>
-                                <td>
-                                    <div className="action-buttons">
-                                        <button onClick={() => handleEdit(variation)} className="btn-edit">
-                                            Edit
-                                        </button>
-                                        <button
-                                            onClick={() => handleDelete(variation.PK_Variation)}
-                                            className="btn-delete"
-                                        >
-                                            Delete
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}
+                        {variations.map((variation) => {
+                            console.log('Variation:', variation);
+                            const images = productImages[variation.PK_Variation] || [];
+                            console.log('Images for variation', variation.PK_Variation, ':', images);
+                            const defaultImage = images.find(img => img.Set_Default) || images[0];
+                            console.log('Default image:', defaultImage);
+                            const imageUrl = defaultImage ?
+                                (defaultImage.Id_Image.startsWith('/static/') ?
+                                    `${API_BASE_URL}${defaultImage.Id_Image}` :
+                                    `${API_BASE_URL}/static/images/${defaultImage.Id_Image}`) :
+                                '';
+                            console.log('Image URL:', imageUrl);
+
+                            return (
+                                <tr key={variation.PK_Variation}>
+                                    <td>{variation.PK_Variation}</td>
+                                    <td>{getProductName(variation.ProductID)}</td>
+                                    <td>
+                                        {defaultImage ? (
+                                            <div style={{ position: 'relative', display: 'inline-block' }}>
+                                                <img
+                                                    src={imageUrl}
+                                                    alt={variation.Name}
+                                                    style={{ width: '50px', height: '50px', objectFit: 'cover' }}
+                                                    onLoad={() => console.log('Image loaded successfully:', imageUrl)}
+                                                    onError={() => {
+                                                        console.error('Image failed to load:', imageUrl);
+                                                        // Don't hide the image, let the browser show the broken image icon
+                                                    }}
+                                                />
+                                                <button
+                                                    onClick={() => handleDeleteImage(defaultImage.PK_Images, variation.PK_Variation)}
+                                                    style={{
+                                                        position: 'absolute',
+                                                        top: '-5px',
+                                                        right: '-5px',
+                                                        background: 'red',
+                                                        color: 'white',
+                                                        border: 'none',
+                                                        borderRadius: '50%',
+                                                        width: '20px',
+                                                        height: '20px',
+                                                        fontSize: '12px',
+                                                        cursor: 'pointer',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center'
+                                                    }}
+                                                    title="Delete image"
+                                                >
+                                                    ×
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <span style={{ color: '#999' }}>No Image</span>
+                                        )}
+                                    </td>
+                                    <td>{variation.SKU}</td>
+                                    <td>{variation.Name}</td>
+                                    <td>${variation.Price}</td>
+                                    <td>{variation.Quantity}</td>
+                                    <td>{variation.Color || 'N/A'}</td>
+                                    <td>{variation.Size || 'N/A'}</td>
+                                    <td>{variation.Status || 'N/A'}</td>
+                                    <td>
+                                        <div className="action-buttons">
+                                            <button onClick={() => handleEdit(variation)} className="btn-edit">
+                                                Edit
+                                            </button>
+                                            <button onClick={() => handleUploadImage(variation)} className="btn-secondary">
+                                                Upload Image
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(variation.PK_Variation)}
+                                                className="btn-delete"
+                                            >
+                                                Delete
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            );
+                        })}
                     </tbody>
                 </table>
             </div>
@@ -283,6 +431,47 @@ export default function VariationList() {
                                 <button
                                     type="button"
                                     onClick={() => setShowModal(false)}
+                                    className="btn-secondary"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {showUploadModal && uploadingVariation && (
+                <div className="modal-overlay" onClick={() => setShowUploadModal(false)}>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                        <h2>Upload Image for {uploadingVariation.Name}</h2>
+                        <form onSubmit={handleUploadSubmit}>
+                            <div className="form-group">
+                                <label>Image File *</label>
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleFileChange}
+                                    required
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>
+                                    <input
+                                        type="checkbox"
+                                        checked={setDefault}
+                                        onChange={(e) => setSetDefault(e.target.checked)}
+                                    />
+                                    Set as default image
+                                </label>
+                            </div>
+                            <div className="modal-actions">
+                                <button type="submit" className="btn-primary">
+                                    Upload
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowUploadModal(false)}
                                     className="btn-secondary"
                                 >
                                     Cancel

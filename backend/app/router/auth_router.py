@@ -27,4 +27,4 @@ def login(account: AccountLogin, db: Session = Depends(get_db)):
     if not db_account:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
     access_token = auth_service.create_access_token(data={"sub": db_account.Username})
-    return {"access_token": access_token, "token_type": "bearer"}
+    return {"access_token": access_token, "token_type": "bearer", "role_id": db_account.RoleID}

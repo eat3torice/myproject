@@ -17,6 +17,13 @@ export default function Login() {
 
         try {
             const response = await authService.login({ username, password });
+
+            // Check if user is admin (role_id = 1), prevent access to user area
+            if (response.role_id === 1) {
+                setError('Admin accounts cannot login to customer area. Please use admin login.');
+                return;
+            }
+
             authService.setToken(response.access_token);
             navigate('/shop');
         } catch (err: any) {

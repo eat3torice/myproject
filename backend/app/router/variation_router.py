@@ -1,11 +1,15 @@
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, File, UploadFile
 from sqlalchemy.orm import Session
+import os
+import shutil
+from pathlib import Path
 
 from app.database.session import get_db
 from app.schema.variation_schema import VariationCreate, VariationResponse, VariationUpdate
 from app.service.variation_service import VariationService
+from app.model.images_model import Images
 
 router = APIRouter(prefix="/admin/variations", tags=["Admin - Variations"])
 
@@ -73,3 +77,31 @@ def update_variation_quantity(variation_id: int, quantity_change: int, db: Sessi
     if not updated:
         raise HTTPException(status_code=404, detail="Variation not found")
     return updated
+
+
+UPLOAD_DIR = Path("static/images")
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+
+
+@router.post("/{variation_id}/upload-image", response_model=dict)
+def upload_variation_image(variation_id: int, file: UploadFile = File(...), set_default: bool = False, db: Session = Depends(get_db)):
+    """Upload ảnh cho variation và lưu vào bảng images"""
+    service = VariationService(db)
+    variation = service.get_variation_by_id(variation_id)
+    if not variation:
+        raise HTTPException(status_code=404, detail="Variation not found")
+
+    # Lưu file local
+    file_path = UPLOAD_DIR / f"variation_{variation_id}_{file.filename}"
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    image_url = f"/static/images/{file_path.name}"
+
+    # Lưu vào bảng images
+    new_image = Images(VariationID=variation_id, Id_Image=image_url, Set_Default=set_default)
+    db.add(new_image)
+    db.commit()
+    db.refresh(new_image)
+
+    return {"image_url": image_url, "image_id": new_image.PK_Images}

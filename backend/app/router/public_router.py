@@ -50,6 +50,15 @@ def list_categories(db: Session = Depends(get_db)):
     return service.get_categories()
 
 
+@router.get("/variation/{variation_id}/images")
+def get_variation_images(variation_id: int, db: Session = Depends(get_db)):
+    """Lấy danh sách ảnh của variation (công khai)"""
+    from app.service.imgage_service import ImagesService
+    service = ImagesService(db)
+    images = service.get_images(variation_id=variation_id)
+    return images
+
+
 @router.get("/brands", response_model=List[BrandPublic])
 def list_brands(db: Session = Depends(get_db)):
     """Lấy danh sách thương hiệu"""

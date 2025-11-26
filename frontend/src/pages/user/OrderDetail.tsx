@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { userService } from '../../services/userService';
+import { imagesService } from '../../services/imagesService';
+import { API_BASE_URL } from '../../config/api';
 import type { Order } from '../../types';
 import type { OrderLine } from '../../types/order';
 import './OrderDetail.css';
@@ -13,6 +15,7 @@ export default function OrderDetail() {
     const { orderId } = useParams<{ orderId: string }>();
     const [order, setOrder] = useState<Order | null>(null);
     const [items, setItems] = useState<OrderLine[]>([]);
+    const [productImages, setProductImages] = useState<{ [key: number]: any[] }>({});
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -26,11 +29,30 @@ export default function OrderDetail() {
             const itemsData = await userService.getOrderItems(Number(orderId));
             setOrder(orderData);
             setItems(itemsData);
+            await loadImages(itemsData);
         } catch (error) {
             alert('Failed to load order detail');
         } finally {
             setLoading(false);
         }
+    };
+
+    const loadImages = async (orderItems: OrderLine[]) => {
+        const imagesMap: { [key: number]: any[] } = {};
+        const variationIds = [...new Set(orderItems.map(item => item.VariationID).filter(id => id))];
+
+        for (const variationId of variationIds) {
+            if (variationId) {
+                try {
+                    const images = await imagesService.getImagesByVariation(variationId);
+                    imagesMap[variationId] = images;
+                } catch (error) {
+                    console.error(`Error loading images for variation ${variationId}:`, error);
+                    imagesMap[variationId] = [];
+                }
+            }
+        }
+        setProductImages(imagesMap);
     };
 
     const handleCancel = async () => {
@@ -103,6 +125,7 @@ export default function OrderDetail() {
                                 <table className="order-lines-table">
                                     <thead>
                                         <tr>
+                                            <th>Image</th>
                                             <th>Product / Variation</th>
                                             <th className="text-right">Unit Price</th>
                                             <th className="text-right">Qty</th>
@@ -111,22 +134,60 @@ export default function OrderDetail() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {items.map((line) => (
-                                            <tr key={line.PK_OrderLine}>
-                                                <td>
-                                                    <div style={{ fontWeight: 600 }}>{line.VariationName || `Variation #${line.VariationID}`}</div>
-                                                    <div style={{ fontSize: '12px', color: '#9ca3af' }}>ID: {line.PK_OrderLine}</div>
-                                                </td>
-                                                <td className="text-right">${Number(line.Unit_Price).toFixed(2)}</td>
-                                                <td className="text-right">x{line.Quantity}</td>
-                                                <td className="text-right" style={{ fontWeight: 600 }}>${Number(line.Price).toFixed(2)}</td>
-                                                <td>
-                                                    <span style={{ fontSize: '12px', color: '#6b7280', background: '#f3f4f6', padding: '2px 8px', borderRadius: '4px' }}>
-                                                        {line.Status}
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        ))}
+                                        {items.map((line) => {
+                                            const images = productImages[line.VariationID || 0] || [];
+                                            const defaultImage = images.find(img => img.Set_Default) || images[0];
+                                            const imageUrl = defaultImage ?
+                                                (defaultImage.Id_Image.startsWith('/static/') ?
+                                                    `${API_BASE_URL}${defaultImage.Id_Image}` :
+                                                    `${API_BASE_URL}/static/images/${defaultImage.Id_Image}`) :
+                                                '';
+
+                                            return (
+                                                <tr key={line.PK_OrderLine}>
+                                                    <td>
+                                                        {defaultImage ? (
+                                                            <img
+                                                                src={imageUrl}
+                                                                alt={line.VariationName || `Variation #${line.VariationID}`}
+                                                                style={{
+                                                                    width: '60px',
+                                                                    height: '60px',
+                                                                    objectFit: 'cover',
+                                                                    borderRadius: '4px'
+                                                                }}
+                                                            />
+                                                        ) : (
+                                                            <div style={{
+                                                                width: '60px',
+                                                                height: '60px',
+                                                                background: '#f3f4f6',
+                                                                borderRadius: '4px',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                color: '#9ca3af',
+                                                                fontSize: '10px'
+                                                            }}>
+                                                                No Image
+                                                            </div>
+                                                        )}
+                                                    </td>
+                                                    <td>
+                                                        <div style={{ fontWeight: 600 }}>{line.VariationName || `Variation #${line.VariationID}`}</div>
+                                                        <div style={{ fontSize: '12px', color: '#9ca3af' }}>ID: {line.PK_OrderLine}</div>
+                                                    </td>
+                                                    <td className="text-right">${Number(line.Unit_Price).toFixed(2)}</td>
+                                                    <td className="text-right">x{line.Quantity}</td>
+                                                    <td className="text-right" style={{ fontWeight: 600 }}>${Number(line.Price).toFixed(2)}</td>
+                                                    <td>
+                                                        <span style={{ fontSize: '12px', color: '#6b7280', background: '#f3f4f6', padding: '2px 8px', borderRadius: '4px' }}>
+                                                            {line.Status}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
                                     </tbody>
                                 </table>
                             </div>
