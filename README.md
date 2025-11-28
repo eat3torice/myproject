@@ -88,8 +88,11 @@ cp .env.example .env
 # Tạo database PostgreSQL và cập nhật DATABASE_URL trong .env
 # Chạy schema SQL: psql -U username -d database_name -f database_schema.sql
 
-# 6. Populate dữ liệu địa chỉ Việt Nam (optional)
+# 5. Populate dữ liệu địa chỉ Việt Nam (optional)
 python populate_addresses.py
+
+# 6. Populate dữ liệu mẫu (categories & brands)
+python populate_sample_data.py
 
 # 7. Chạy server
 uvicorn app.main:app --reload
