@@ -7,6 +7,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from app.database.base_class import Base
+import app.model  # Import all models to ensure they're registered with SQLAlchemy
 from app.model.orderline_model import OrderLine
 from app.model.posorder_model import POSOrder
 from app.model.variation_model import Variation
@@ -34,3 +35,4 @@ def test_create_orderline(session):
     assert result is not None
     assert result.variation.SKU == "SKU2"
     assert result.OrderID == order.PK_POSOrder
+

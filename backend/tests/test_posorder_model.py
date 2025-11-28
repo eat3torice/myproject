@@ -7,6 +7,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from app.database.base_class import Base
+import app.model  # Import all models to ensure they're registered with SQLAlchemy
+import app.model  # Import all models to ensure they're registered with SQLAlchemy
 from app.model.customer_model import Customer
 from app.model.employee_model import Employee
 from app.model.posorder_model import POSOrder
@@ -34,3 +36,4 @@ def test_create_posorder(session):
     assert result is not None
     assert result.CustomerID == cust.PK_Customer
     assert result.EmployeeID == emp.PK_Employee
+

@@ -7,6 +7,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from app.database.base_class import Base
+import app.model  # Import all models to ensure they're registered with SQLAlchemy
 from app.model.brand_model import Brand
 from app.model.category_model import Category
 from app.model.product_model import Product
@@ -35,3 +36,4 @@ def test_create_product(session):
     assert result.Name == "TestProduct"
     assert result.category.Name == "TestCat"
     assert result.brand.Name == "TestBrand"
+

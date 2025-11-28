@@ -1,6 +1,7 @@
 # Import toàn bộ model để SQLAlchemy nhận diện khi tạo bảng
 
 from app.model.account_model import Account
+from app.model.address_model import Address
 from app.model.brand_model import Brand
 from app.model.cart_variation_model import CartVariation
 from app.model.cartitem_model import CartItem
@@ -18,6 +19,7 @@ from app.model.variation_model import Variation
 __all__ = [
     "Role",
     "Account",
+    "Address",
     "Employee",
     "Customer",
     "Brand",

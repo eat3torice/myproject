@@ -7,6 +7,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from app.database.base_class import Base
+import app.model  # Import all models to ensure they're registered with SQLAlchemy
+import app.model  # Import all models to ensure they're registered with SQLAlchemy
 from app.model.account_model import Account
 from app.model.role_model import Role
 
@@ -32,3 +34,4 @@ def test_create_account(session):
     assert result is not None
     assert result.Username == "acc1"
     assert result.role.Name == "User"
+

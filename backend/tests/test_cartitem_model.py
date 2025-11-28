@@ -7,6 +7,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from app.database.base_class import Base
+import app.model  # Import all models to ensure they're registered with SQLAlchemy
 from app.model.cartitem_model import CartItem
 from app.model.customer_model import Customer
 
@@ -31,3 +32,4 @@ def test_create_cartitem(session):
     result = session.query(CartItem).filter_by(Quantity=2).first()
     assert result is not None
     assert result.Customer_id == cust.PK_Customer
+

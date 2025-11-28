@@ -7,6 +7,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from app.database.base_class import Base
+import app.model  # Import all models to ensure they're registered with SQLAlchemy
 from app.model.account_model import Account
 from app.model.customer_model import Customer
 
@@ -32,3 +33,4 @@ def test_create_customer(session):
     assert result is not None
     assert result.Name == "Test User"
     assert result.account.Username == "user1"
+

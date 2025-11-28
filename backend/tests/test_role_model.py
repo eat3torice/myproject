@@ -8,6 +8,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from app.database.base_class import Base
+import app.model  # Import all models to ensure they're registered with SQLAlchemy
 from app.model.role_model import Role
 
 
@@ -29,3 +30,4 @@ def test_create_role(session):
     assert result is not None
     assert result.Name == "Admin"
     assert isinstance(result.PK_Role, int)
+

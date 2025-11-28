@@ -7,6 +7,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from app.database.base_class import Base
+import app.model  # Import all models to ensure they're registered with SQLAlchemy
 from app.model.cart_variation_model import CartVariation
 from app.model.cartitem_model import CartItem
 from app.model.customer_model import Customer
@@ -37,3 +38,4 @@ def test_create_cart_variation(session):
     result = session.query(CartVariation).filter_by(CartItemID=cart.PK_CartItem).first()
     assert result is not None
     assert result.VariationID == var.PK_Variation
+
