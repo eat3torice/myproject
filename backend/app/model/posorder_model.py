@@ -9,6 +9,7 @@ class POSOrder(Base):
     PK_POSOrder = Column("pk_posorder", Integer, primary_key=True, index=True)
     CustomerID = Column("customerid", Integer, ForeignKey("customer.pk_customer"))
     EmployeeID = Column("employeeid", Integer, ForeignKey("employee.pk_employee"))
+    AddressID = Column("addressid", Integer, ForeignKey("address.pk_address"))
     Creation_date = Column("creation_date", TIMESTAMP)
     Total_Amount = Column("total_amount", Numeric(12, 2))
     Total_Payment = Column("total_payment", Numeric(12, 2))

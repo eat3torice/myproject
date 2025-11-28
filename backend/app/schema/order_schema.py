@@ -33,6 +33,7 @@ class OrderCreate(BaseModel):
     CustomerID: Optional[int] = None
     EmployeeID: Optional[int] = None  # Allow None for online orders
     PaymentMethodID: int
+    AddressID: Optional[int] = None  # Địa chỉ giao hàng
     Note: Optional[str] = None
     Type_Order: str = "POS"  # POS hoặc Online
     order_lines: List[OrderLineCreate]
@@ -54,6 +55,7 @@ class OrderResponse(BaseModel):
     PK_POSOrder: int
     CustomerID: Optional[int]
     EmployeeID: Optional[int]
+    AddressID: Optional[int]
     Creation_date: Optional[datetime]
     Total_Amount: Decimal
     Total_Payment: Decimal
@@ -63,6 +65,7 @@ class OrderResponse(BaseModel):
     Order_Date: Optional[datetime]
     Payment_Date: Optional[datetime]
     Type_Order: str
+    ShippingAddress: Optional[str] = None  # Full address string
 
     class Config:
         from_attributes = True

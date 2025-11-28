@@ -1,15 +1,14 @@
-from typing import List, Optional
-
-from fastapi import APIRouter, Depends, HTTPException, Query, File, UploadFile
-from sqlalchemy.orm import Session
-import os
 import shutil
 from pathlib import Path
+from typing import List, Optional
+
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
+from sqlalchemy.orm import Session
 
 from app.database.session import get_db
+from app.model.images_model import Images
 from app.schema.variation_schema import VariationCreate, VariationResponse, VariationUpdate
 from app.service.variation_service import VariationService
-from app.model.images_model import Images
 
 router = APIRouter(prefix="/admin/variations", tags=["Admin - Variations"])
 
@@ -84,7 +83,12 @@ UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 
 @router.post("/{variation_id}/upload-image", response_model=dict)
-def upload_variation_image(variation_id: int, file: UploadFile = File(...), set_default: bool = False, db: Session = Depends(get_db)):
+def upload_variation_image(
+    variation_id: int,
+    file: UploadFile = File(...),
+    set_default: bool = False,
+    db: Session = Depends(get_db),
+):
     """Upload ảnh cho variation và lưu vào bảng images"""
     service = VariationService(db)
     variation = service.get_variation_by_id(variation_id)

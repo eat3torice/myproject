@@ -23,6 +23,29 @@ class OrderService:
         order = self.db.query(POSOrder).filter(POSOrder.PK_POSOrder == order_id).first()
         if not order:
             return None
+
+        # Add shipping address if exists
+        shipping_address = None
+        if order.AddressID:
+            from app.model.address_model import Address, District, Province, Ward
+            address = self.db.query(Address).filter(Address.PK_Address == order.AddressID).first()
+            if address:
+                province = self.db.query(Province).filter(Province.PK_Province == address.ProvinceID).first()
+                district = self.db.query(District).filter(District.PK_District == address.DistrictID).first()
+                ward = self.db.query(Ward).filter(Ward.PK_Ward == address.WardID).first()
+
+                address_parts = []
+                if address.StreetAddress:
+                    address_parts.append(address.StreetAddress)
+                if ward:
+                    address_parts.append(ward.Name)
+                if district:
+                    address_parts.append(district.Name)
+                if province:
+                    address_parts.append(province.Name)
+
+                shipping_address = ", ".join(address_parts)
+
         # Sync order line status if order is cancelled or completed
         if order.Status and order.Status.upper() in ["CANCELLED", "COMPLETED"]:
             order_lines = self.db.query(OrderLine).filter(OrderLine.OrderID == order_id).all()
@@ -30,6 +53,9 @@ class OrderService:
                 if line.Status.upper() != order.Status.upper():
                     line.Status = order.Status.upper()
             self.db.commit()
+
+        # Add shipping address to order object
+        order.ShippingAddress = shipping_address
         return order
 
     def create_order(self, order_data: OrderCreate):
@@ -42,6 +68,7 @@ class OrderService:
         db_order = POSOrder(
             CustomerID=order_data.CustomerID,
             EmployeeID=order_data.EmployeeID,
+            AddressID=order_data.AddressID,
             PaymentMethodID=order_data.PaymentMethodID,
             Note=order_data.Note,
             Type_Order=order_data.Type_Order,
@@ -82,9 +109,10 @@ class OrderService:
         order = self.db.query(POSOrder).filter(POSOrder.PK_POSOrder == order_id).first()
         if not order:
             return None
-        # Prevent status update if order is cancelled or completed
+
+        # Prevent any updates if order is cancelled or completed
         if order.Status and order.Status.upper() in ["CANCELLED", "COMPLETED"]:
-            return None
+            raise ValueError(f"Cannot update order with status '{order.Status}'. Order is already finalized.")
 
         for key, value in order_data.dict(exclude_unset=True).items():
             setattr(order, key, value)
@@ -96,7 +124,7 @@ class OrderService:
     def cancel_order(self, order_id: int):
         """Cancel order and restore inventory"""
         order = self.db.query(POSOrder).filter(POSOrder.PK_POSOrder == order_id).first()
-        if not order or order.Status == "CANCELLED":
+        if not order or order.Status.upper() in ["CANCELLED", "COMPLETED"]:
             return None
 
         # Restore inventory

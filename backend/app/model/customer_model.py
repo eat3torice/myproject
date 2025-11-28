@@ -18,3 +18,4 @@ class Customer(Base):
     Edit_date = Column("edit_date", TIMESTAMP)
 
     account = relationship("Account", back_populates="customer")
+    addresses = relationship("Address", back_populates="customer")

@@ -66,10 +66,13 @@ def create_order(order: OrderCreate, db: Session = Depends(get_db)):
 def update_order(order_id: int, order: OrderUpdate, db: Session = Depends(get_db)):
     """Cập nhật đơn hàng"""
     service = OrderService(db)
-    updated = service.update_order(order_id, order)
-    if not updated:
-        raise HTTPException(status_code=404, detail="Order not found")
-    return updated
+    try:
+        updated = service.update_order(order_id, order)
+        if not updated:
+            raise HTTPException(status_code=404, detail="Order not found")
+        return updated
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.post("/{order_id}/cancel", response_model=OrderResponse)

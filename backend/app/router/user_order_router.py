@@ -38,6 +38,14 @@ def get_my_orders(
         query = query.filter(POSOrder.Status == status)
 
     orders = query.order_by(POSOrder.Creation_date.desc()).offset(skip).limit(limit).all()
+
+    # Populate shipping addresses for each order
+    service = OrderService(db)
+    for order in orders:
+        order_with_address = service.get_order_by_id(order.PK_POSOrder)
+        if order_with_address:
+            order.ShippingAddress = order_with_address.ShippingAddress
+
     return orders
 
 
@@ -46,11 +54,15 @@ def get_order_detail(order_id: int, customer_id: int = Depends(get_current_custo
     """Lấy chi tiết đơn hàng"""
     from app.model.posorder_model import POSOrder
 
+    # First verify order belongs to customer
     order = db.query(POSOrder).filter(POSOrder.PK_POSOrder == order_id, POSOrder.CustomerID == customer_id).first()
 
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
-    return order
+
+    # Use OrderService to get order with shipping address populated
+    service = OrderService(db)
+    return service.get_order_by_id(order_id)
 
 
 @router.get("/{order_id}/items", response_model=List[OrderLineResponse])
@@ -97,6 +109,7 @@ def create_order(order_data: dict, customer_id: int = Depends(get_current_custom
     order = OrderCreate(
         CustomerID=customer_id,
         EmployeeID=None,
+        AddressID=order_data.get("address_id"),
         PaymentMethodID=order_data.get("payment_method_id", 5),  # Default to Cash
         Note=order_data.get("note", ""),
         Type_Order="Online",
@@ -126,5 +139,36 @@ def cancel_my_order(order_id: int, customer_id: int = Depends(get_current_custom
     service = OrderService(db)
     cancelled = service.cancel_order(order_id)
     if not cancelled:
-        raise HTTPException(status_code=400, detail="Order not found or already cancelled")
+        raise HTTPException(status_code=400, detail="Order not found, already cancelled, or already completed")
     return cancelled
+
+
+@router.post("/{order_id}/confirm-received", response_model=OrderResponse)
+def confirm_order_received(
+    order_id: int,
+    customer_id: int = Depends(get_current_customer_id),
+    db: Session = Depends(get_db),
+):
+    """Xác nhận đã nhận được đơn hàng (chỉ khi trạng thái là processing)"""
+    from app.model.posorder_model import POSOrder
+
+    # Verify order belongs to customer
+    order = db.query(POSOrder).filter(POSOrder.PK_POSOrder == order_id, POSOrder.CustomerID == customer_id).first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    # Only allow confirmation if order is in processing status
+    if order.Status != "processing":
+        raise HTTPException(status_code=400, detail="Order must be in processing status to confirm receipt")
+
+    service = OrderService(db)
+    # Update order status to completed
+    from app.schema.order_schema import OrderUpdate
+    order_update = OrderUpdate(Status="COMPLETED")
+    try:
+        confirmed = service.update_order(order_id, order_update)
+        if not confirmed:
+            raise HTTPException(status_code=400, detail="Failed to confirm order receipt")
+        return confirmed
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))

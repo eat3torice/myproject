@@ -66,6 +66,17 @@ export default function OrderDetail() {
         }
     };
 
+    const handleConfirmReceived = async () => {
+        if (!confirm('Are you sure you have received this order? This action cannot be undone.')) return;
+        try {
+            await userService.confirmOrderReceived(Number(orderId));
+            await loadDetail();
+            alert('Order confirmed as received');
+        } catch (error: any) {
+            alert(error.response?.data?.detail || 'Failed to confirm order receipt');
+        }
+    };
+
     if (loading) return <div className="loading-container">Loading details...</div>;
     if (!order) return <div className="loading-container">Order not found</div>;
 
@@ -107,12 +118,25 @@ export default function OrderDetail() {
                             </div>
                         </div>
 
-                        {/* Cancel Action specifically for Detail View */}
-                        {(order.Status.toUpperCase() !== 'CANCELLED' && order.Status.toUpperCase() !== 'COMPLETED') && (
-                            <div className="action-bar">
-                                <button className="btn-cancel" onClick={handleCancel}>Cancel Order</button>
+                        {/* Shipping Address Section */}
+                        {order.ShippingAddress && (
+                            <div className="detail-item" style={{ marginTop: '16px' }}>
+                                <label>Shipping Address</label>
+                                <div style={{ color: '#374151', fontSize: '14px', lineHeight: '1.5' }}>
+                                    {order.ShippingAddress}
+                                </div>
                             </div>
                         )}
+
+                        {/* Cancel Action specifically for Detail View */}
+                        <div className="action-bar">
+                            {(order.Status.toUpperCase() !== 'CANCELLED' && order.Status.toUpperCase() !== 'COMPLETED') && (
+                                <button className="btn-cancel" onClick={handleCancel}>Cancel Order</button>
+                            )}
+                            {order.Status.toLowerCase() === 'processing' && (
+                                <button className="btn-confirm" onClick={handleConfirmReceived}>Confirm Received</button>
+                            )}
+                        </div>
                     </div>
 
                     {/* Products Table Section */}

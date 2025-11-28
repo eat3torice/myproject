@@ -67,6 +67,7 @@ export interface Order {
     Order_Date?: string;
     Payment_Date?: string;
     Type_Order: string;
+    ShippingAddress?: string;
 }
 
 export interface LoginRequest {

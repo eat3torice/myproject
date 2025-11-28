@@ -1,14 +1,14 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.openapi.utils import get_openapi
 from fastapi.staticfiles import StaticFiles
 
-# ✅ Cấu hình bảo mật cho Swagger
-from fastapi.openapi.utils import get_openapi
-
 import app.model  # Đảm bảo model được load trước
+import app.model.address_model  # Import address models explicitly
 from app.database.base_class import Base
 from app.database.session import engine
 from app.router import (
+    address_router,
     auth_router,
     brand_router,
     cart_router,
@@ -60,6 +60,7 @@ app.include_router(user_router.router)
 app.include_router(public_router.router)
 app.include_router(cart_router.router)
 app.include_router(user_order_router.router)
+app.include_router(address_router.router)
 
 
 # ✅ Thêm security scheme để hiện nút “Authorize 🔒”

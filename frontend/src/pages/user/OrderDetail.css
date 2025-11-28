@@ -110,6 +110,41 @@
     margin-top: 24px;
     padding-top: 24px;
     border-top: 1px dashed var(--border-color);
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.action-bar .btn-cancel,
+.action-bar .btn-confirm {
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+}
+
+.action-bar .btn-cancel {
+    background-color: transparent;
+    color: #ef4444;
+}
+
+.action-bar .btn-cancel:hover {
+    background-color: #fef2f2;
+    border-color: #fee2e2;
+}
+
+.action-bar .btn-confirm {
+    background-color: #10b981;
+    border-color: #10b981;
+    color: white;
+}
+
+.action-bar .btn-confirm:hover {
+    background-color: #059669;
+    border-color: #059669;
 }
 
 @keyframes fadeIn {

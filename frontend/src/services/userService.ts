@@ -33,6 +33,7 @@ export const userService = {
 
     createOrder: async (orderData: {
         payment_method_id: number;
+        address_id?: number;
         note?: string;
     }) => {
         const response = await api.post('/user/orders', orderData);
@@ -48,6 +49,11 @@ export const userService = {
     },
     cancelOrder: async (orderId: number) => {
         const response = await api.post(`/user/orders/${orderId}/cancel`);
+        return response.data;
+    },
+
+    confirmOrderReceived: async (orderId: number) => {
+        const response = await api.post(`/user/orders/${orderId}/confirm-received`);
         return response.data;
     },
 };

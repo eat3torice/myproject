@@ -204,6 +204,14 @@ export default function OrderList() {
                                         <small style={{ color: '#6b7280', textTransform: 'uppercase', fontSize: '11px', fontWeight: 700 }}>Total Amount</small>
                                         <div style={{ color: '#059669', fontWeight: 700, fontSize: '18px' }}>${selectedOrder.Total_Amount}</div>
                                     </div>
+                                    {selectedOrder.ShippingAddress && (
+                                        <div style={{ gridColumn: '1 / -1' }}>
+                                            <small style={{ color: '#6b7280', textTransform: 'uppercase', fontSize: '11px', fontWeight: 700 }}>Shipping Address</small>
+                                            <div style={{ color: '#374151', fontSize: '14px', lineHeight: '1.5', marginTop: '4px' }}>
+                                                {selectedOrder.ShippingAddress}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
 
                                 <h3 style={{ fontSize: '16px', marginBottom: '12px' }}>Order Items</h3>

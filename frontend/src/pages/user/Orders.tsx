@@ -45,6 +45,17 @@ export default function Orders() {
         }
     };
 
+    const handleConfirmReceived = async (orderId: number) => {
+        if (!confirm('Are you sure you have received this order? This action cannot be undone.')) return;
+        try {
+            await userService.confirmOrderReceived(orderId);
+            await loadOrders();
+            alert('Order confirmed as received');
+        } catch (error: any) {
+            alert(error.response?.data?.detail || 'Failed to confirm order receipt');
+        }
+    };
+
     if (loading) return <div className="loading-container">Loading your orders...</div>;
 
     return (
@@ -114,6 +125,15 @@ export default function Orders() {
                                                 title="Cancel Order"
                                             >
                                                 Cancel
+                                            </button>
+                                        )}
+                                        {order.Status.toLowerCase() === 'processing' && (
+                                            <button
+                                                className="btn-confirm"
+                                                onClick={() => handleConfirmReceived(order.PK_POSOrder)}
+                                                title="Confirm Order Received"
+                                            >
+                                                Confirm Received
                                             </button>
                                         )}
                                         <Link to={`/orders/${order.PK_POSOrder}`} className="btn-detail">

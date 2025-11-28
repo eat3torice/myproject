@@ -219,7 +219,8 @@
 }
 
 .btn-detail,
-.btn-cancel {
+.btn-cancel,
+.btn-confirm {
     padding: 10px 20px;
     border-radius: 8px;
     font-size: 14px;
@@ -252,6 +253,17 @@
 .btn-cancel:hover {
     background-color: #fef2f2;
     border-color: #fee2e2;
+}
+
+.btn-confirm {
+    background-color: #10b981;
+    border: 1px solid #10b981;
+    color: white;
+}
+
+.btn-confirm:hover {
+    background-color: #059669;
+    border-color: #059669;
 }
 
 /* Loading */
