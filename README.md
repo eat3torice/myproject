@@ -147,7 +147,7 @@ npm run lint
 - **ReDoc**: http://localhost:8000/redoc
 - **OpenAPI JSON**: http://localhost:8000/openapi.json
 
-## 🗄️ Database Schema
+### 🗄️ Database Schema
 
 ### Các bảng chính:
 - `account` - Tài khoản người dùng
@@ -157,6 +157,13 @@ npm run lint
 - `variation` - Biến thể sản phẩm
 - `posorder` - Đơn hàng
 - `address` - Địa chỉ giao hàng (3 cấp)
+
+### 📄 Database Schema File
+File `backend/database_schema.sql` chứa schema đầy đủ của database PostgreSQL, bao gồm:
+- Tất cả các bảng và cột
+- Constraints và indexes
+- Foreign key relationships
+- Được tạo từ pgAdmin 4 ERD tool
 
 ## 🔐 Authentication
 
