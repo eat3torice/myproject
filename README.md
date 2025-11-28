@@ -27,7 +27,6 @@ Một nền tảng thương mại điện tử đầy đủ tính năng được
 ### 👨‍💼 Quản trị viên (Admin)
 - Dashboard quản lý đơn hàng
 - Quản lý khách hàng, nhân viên
-- Báo cáo và thống kê
 
 ## 🏗️ Kiến trúc hệ thống
 
