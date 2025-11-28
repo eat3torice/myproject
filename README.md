@@ -81,13 +81,18 @@ source .venv/bin/activate  # Linux/Mac
 # 3. Cài đặt dependencies
 pip install -r app/requirements.txt
 
-# 4. Setup database
-# Tạo database PostgreSQL và cập nhật DATABASE_URL trong .env
+# 4. Setup environment variables
+cp .env.example .env
+# Edit .env file with your actual database credentials and secret keys
 
-# 5. Populate dữ liệu địa chỉ Việt Nam
+# 5. Setup database
+# Tạo database PostgreSQL và cập nhật DATABASE_URL trong .env
+# Chạy schema SQL: psql -U username -d database_name -f database_schema.sql
+
+# 6. Populate dữ liệu địa chỉ Việt Nam (optional)
 python populate_addresses.py
 
-# 6. Chạy server
+# 7. Chạy server
 uvicorn app.main:app --reload
 ```
 
@@ -171,6 +176,25 @@ Sử dụng JWT (JSON Web Tokens) cho authentication:
 - **Access Token**: Hết hạn sau 30 phút
 - **Refresh Token**: Hết hạn sau 7 ngày
 - **Role-based Access**: Admin/User permissions
+
+## ⚙️ Environment Variables
+
+Project sử dụng các biến môi trường được định nghĩa trong file `.env`. Copy file mẫu và điền thông tin thực tế:
+
+```bash
+cp backend/.env.example backend/.env
+```
+
+### Biến môi trường bắt buộc:
+- `DATABASE_URL`: PostgreSQL connection string
+- `SECRET_KEY`: Key bí mật cho JWT signing
+- `ALGORITHM`: Thuật toán JWT (HS256)
+
+### Biến môi trường tùy chọn:
+- `ACCESS_TOKEN_EXPIRE_MINUTES`: Thời gian hết hạn token (mặc định: 30 phút)
+- `DEBUG`: Chế độ debug (true/false)
+- `HOST`: Server host (mặc định: 0.0.0.0)
+- `PORT`: Server port (mặc định: 8000)
 
 ## 🧪 Testing
 
