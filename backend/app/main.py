@@ -29,10 +29,16 @@ app = FastAPI(title="Auth Service API", version="0.1.0")
 # Cho phép frontend truy cập API
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # hoặc frontend URL cụ thể
+    allow_origins=[
+        "http://localhost:5173",
+        "http://localhost:3000",
+        "https://myproject-d8ri.onrender.com",
+        "*"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 # Serve static files
