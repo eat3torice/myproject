@@ -14,16 +14,29 @@ export default function OrderList() {
 
     const [selectedOrder, setSelectedOrder] = useState<OrderDetail | null>(null);
     const [detailLoading, setDetailLoading] = useState(false);
+    const [filters, setFilters] = useState({
+        status: '',
+        customer_id: '',
+        start_date: '',
+        end_date: '',
+    });
 
     useEffect(() => {
         loadData();
-    }, []);
+    }, [filters]);
 
     const loadData = async () => {
         try {
             const [ordersData, customersData] = await Promise.all([
-                orderService.getAll(0, 100),
-                customerService.getAll(0, 100),
+                orderService.getAll({
+                    skip: 0,
+                    limit: 100,
+                    status: filters.status || undefined,
+                    customer_id: filters.customer_id ? parseInt(filters.customer_id) : undefined,
+                    start_date: filters.start_date || undefined,
+                    end_date: filters.end_date || undefined,
+                }),
+                customerService.getAll({ skip: 0, limit: 100 }),
             ]);
             // Sắp xếp đơn hàng mới nhất lên đầu
             setOrders(ordersData.sort((a: Order, b: Order) => b.PK_POSOrder - a.PK_POSOrder));
@@ -93,12 +106,74 @@ export default function OrderList() {
         return customers.find((c) => c.PK_Customer === id)?.Name || 'N/A';
     };
 
+    const handleFilterChange = (field: string, value: string) => {
+        setFilters(prev => ({ ...prev, [field]: value }));
+    };
+
+    const clearFilters = () => {
+        setFilters({ status: '', customer_id: '', start_date: '', end_date: '' });
+    };
+
     if (loading) return <div className="loading">Loading...</div>;
 
     return (
         <div className="page-container">
             <div className="page-header">
                 <h1>Orders Management</h1>
+            </div>
+
+            {/* Filter Section */}
+            <div className="filter-section">
+                <div className="filter-row">
+                    <div className="filter-group">
+                        <label>Status:</label>
+                        <select
+                            value={filters.status}
+                            onChange={(e) => handleFilterChange('status', e.target.value)}
+                        >
+                            <option value="">All Status</option>
+                            <option value="PENDING">Pending</option>
+                            <option value="PROCESSING">Processing</option>
+                            <option value="COMPLETED">Completed</option>
+                            <option value="CANCELLED">Cancelled</option>
+                        </select>
+                    </div>
+                    <div className="filter-group">
+                        <label>Customer:</label>
+                        <select
+                            value={filters.customer_id}
+                            onChange={(e) => handleFilterChange('customer_id', e.target.value)}
+                        >
+                            <option value="">All Customers</option>
+                            {customers.map((customer) => (
+                                <option key={customer.PK_Customer} value={customer.PK_Customer}>
+                                    {customer.Name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="filter-group">
+                        <label>Start Date:</label>
+                        <input
+                            type="date"
+                            value={filters.start_date}
+                            onChange={(e) => handleFilterChange('start_date', e.target.value)}
+                        />
+                    </div>
+                    <div className="filter-group">
+                        <label>End Date:</label>
+                        <input
+                            type="date"
+                            value={filters.end_date}
+                            onChange={(e) => handleFilterChange('end_date', e.target.value)}
+                        />
+                    </div>
+                    <div className="filter-actions">
+                        <button onClick={clearFilters} className="btn-secondary">
+                            Clear Filters
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <div className="table-container">

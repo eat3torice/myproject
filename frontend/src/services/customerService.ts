@@ -2,8 +2,21 @@ import api from '../config/api';
 import type { Customer } from '../types';
 
 export const customerService = {
-    getAll: async (skip: number = 0, limit: number = 100): Promise<Customer[]> => {
-        const response = await api.get(`/admin/customers/?skip=${skip}&limit=${limit}`);
+    getAll: async (params?: {
+        skip?: number;
+        limit?: number;
+        name?: string;
+        phone?: string;
+        status?: string;
+    }): Promise<Customer[]> => {
+        const queryParams = new URLSearchParams();
+        if (params?.skip !== undefined) queryParams.append('skip', params.skip.toString());
+        if (params?.limit !== undefined) queryParams.append('limit', params.limit.toString());
+        if (params?.name) queryParams.append('name', params.name);
+        if (params?.phone) queryParams.append('phone', params.phone);
+        if (params?.status) queryParams.append('status', params.status);
+
+        const response = await api.get(`/admin/customers/?${queryParams.toString()}`);
         return response.data;
     },
 

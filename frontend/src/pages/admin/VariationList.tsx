@@ -46,7 +46,7 @@ export default function VariationList() {
         try {
             const [variationsData, productsData] = await Promise.all([
                 variationService.getAll(0, 100),
-                productService.getAll(0, 100),
+                productService.getAll({ skip: 0, limit: 100 }),
             ]);
             setVariations(variationsData);
             setProducts(productsData);

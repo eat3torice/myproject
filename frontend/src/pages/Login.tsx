@@ -18,9 +18,9 @@ export default function Login() {
         try {
             const response = await authService.login({ username, password });
 
-            // Check if user is admin (role_id = 1), prevent access to user area
-            if (response.role_id === 1) {
-                setError('Admin accounts cannot login to customer area. Please use admin login.');
+            // Check if user is admin or employee, prevent access to user area
+            if (response.role_id === 1 || response.role_id === 18) {
+                setError('Admin and Employee accounts cannot login to customer area. Please use admin login.');
                 return;
             }
 

@@ -51,6 +51,7 @@ export interface Employee {
     Name: string;
     Phone?: string;
     Email?: string;
+    Status?: string;
     Creation_date?: string;
 }
 
@@ -79,4 +80,5 @@ export interface LoginResponse {
     access_token: string;
     token_type: string;
     role_id: number;
+    account_status: string;
 }

@@ -157,7 +157,7 @@ npm run lint
 ### 🗄️ Database Schema
 
 ### Các bảng chính:
-- `account` - Tài khoản người dùng
+- `account` - Tài khoản người dùng (role_id: 1=ADMIN, 2=CUSTOMER, 18=EMPLOYEE)
 - `customer` - Thông tin khách hàng
 - `employee` - Thông tin nhân viên
 - `product` - Sản phẩm
@@ -210,6 +210,10 @@ pytest --cov=app --cov-report=html
 # Chạy smoke test
 pytest tests/test_smoke.py
 ```
+
+### 📋 Sample Accounts
+
+Check `SAMPLE_ACCOUNTS.md` for a complete list of sample accounts with different roles for testing the role-based access control system.
 
 ## 📦 Deployment
 

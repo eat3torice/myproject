@@ -15,14 +15,25 @@ export default function CustomerList() {
         Note: '',
         Status: 'ACTIVE',
     });
+    const [filters, setFilters] = useState({
+        name: '',
+        phone: '',
+        status: '',
+    });
 
     useEffect(() => {
         loadData();
-    }, []);
+    }, [filters]);
 
     const loadData = async () => {
         try {
-            const data = await customerService.getAll(0, 100);
+            const data = await customerService.getAll({
+                skip: 0,
+                limit: 100,
+                name: filters.name || undefined,
+                phone: filters.phone || undefined,
+                status: filters.status || undefined,
+            });
             setCustomers(data);
         } catch (error) {
             console.error('Error loading customers:', error);
@@ -81,6 +92,14 @@ export default function CustomerList() {
         });
     };
 
+    const handleFilterChange = (field: string, value: string) => {
+        setFilters(prev => ({ ...prev, [field]: value }));
+    };
+
+    const clearFilters = () => {
+        setFilters({ name: '', phone: '', status: '' });
+    };
+
     if (loading) return <div className="loading">Loading...</div>;
 
     return (
@@ -97,6 +116,46 @@ export default function CustomerList() {
                 >
                     + Add Customer
                 </button>
+            </div>
+
+            {/* Filter Section */}
+            <div className="filter-section">
+                <div className="filter-row">
+                    <div className="filter-group">
+                        <label>Search by Name:</label>
+                        <input
+                            type="text"
+                            value={filters.name}
+                            onChange={(e) => handleFilterChange('name', e.target.value)}
+                            placeholder="Enter customer name..."
+                        />
+                    </div>
+                    <div className="filter-group">
+                        <label>Phone:</label>
+                        <input
+                            type="text"
+                            value={filters.phone}
+                            onChange={(e) => handleFilterChange('phone', e.target.value)}
+                            placeholder="Enter phone number..."
+                        />
+                    </div>
+                    <div className="filter-group">
+                        <label>Status:</label>
+                        <select
+                            value={filters.status}
+                            onChange={(e) => handleFilterChange('status', e.target.value)}
+                        >
+                            <option value="">All Status</option>
+                            <option value="ACTIVE">ACTIVE</option>
+                            <option value="INACTIVE">INACTIVE</option>
+                        </select>
+                    </div>
+                    <div className="filter-actions">
+                        <button onClick={clearFilters} className="btn-secondary">
+                            Clear Filters
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <div className="table-container">
@@ -158,8 +217,8 @@ export default function CustomerList() {
                                     value={formData.Status}
                                     onChange={(e) => setFormData({ ...formData, Status: e.target.value })}
                                 >
-                                    <option value="ACTIVE">Active</option>
-                                    <option value="Inactive">Inactive</option>
+                                    <option value="ACTIVE">ACTIVE</option>
+                                    <option value="INACTIVE">INACTIVE</option>
                                 </select>
                             </div>
                             <div className="form-group">
@@ -186,7 +245,7 @@ export default function CustomerList() {
                                     rows={3}
                                 />
                             </div>
-                           
+
                             <div className="modal-actions">
                                 <button type="submit" className="btn-primary">
                                     {editingCustomer ? 'Update' : 'Create'}

@@ -18,15 +18,26 @@ export default function ProductList() {
         CategoryID: 0,
         BrandID: 0,
     });
+    const [filters, setFilters] = useState({
+        name: '',
+        category_id: '',
+        brand_id: '',
+    });
 
     useEffect(() => {
         loadData();
-    }, []);
+    }, [filters]);
 
     const loadData = async () => {
         try {
             const [productsData, categoriesData, brandsData] = await Promise.all([
-                productService.getAll(0, 100),
+                productService.getAll({
+                    skip: 0,
+                    limit: 100,
+                    name: filters.name || undefined,
+                    category_id: filters.category_id ? parseInt(filters.category_id) : undefined,
+                    brand_id: filters.brand_id ? parseInt(filters.brand_id) : undefined,
+                }),
                 categoryService.getAll(),
                 brandService.getAll(),
             ]);
@@ -96,6 +107,14 @@ export default function ProductList() {
         return brands.find((b) => b.PK_Brand === id)?.Name || 'N/A';
     };
 
+    const handleFilterChange = (field: string, value: string) => {
+        setFilters(prev => ({ ...prev, [field]: value }));
+    };
+
+    const clearFilters = () => {
+        setFilters({ name: '', category_id: '', brand_id: '' });
+    };
+
     if (loading) return <div className="loading">Loading...</div>;
 
     return (
@@ -112,6 +131,54 @@ export default function ProductList() {
                 >
                     + Add Product
                 </button>
+            </div>
+
+            {/* Filter Section */}
+            <div className="filter-section">
+                <div className="filter-row">
+                    <div className="filter-group">
+                        <label>Search by Name:</label>
+                        <input
+                            type="text"
+                            value={filters.name}
+                            onChange={(e) => handleFilterChange('name', e.target.value)}
+                            placeholder="Enter product name..."
+                        />
+                    </div>
+                    <div className="filter-group">
+                        <label>Category:</label>
+                        <select
+                            value={filters.category_id}
+                            onChange={(e) => handleFilterChange('category_id', e.target.value)}
+                        >
+                            <option value="">All Categories</option>
+                            {categories.map((cat) => (
+                                <option key={cat.PK_Category} value={cat.PK_Category}>
+                                    {cat.Name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="filter-group">
+                        <label>Brand:</label>
+                        <select
+                            value={filters.brand_id}
+                            onChange={(e) => handleFilterChange('brand_id', e.target.value)}
+                        >
+                            <option value="">All Brands</option>
+                            {brands.map((brand) => (
+                                <option key={brand.PK_Brand} value={brand.PK_Brand}>
+                                    {brand.Name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="filter-actions">
+                        <button onClick={clearFilters} className="btn-secondary">
+                            Clear Filters
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <div className="table-container">

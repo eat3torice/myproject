@@ -2,8 +2,19 @@ import api from '../config/api';
 import type { Brand } from '../types';
 
 export const brandService = {
-    getAll: async (): Promise<Brand[]> => {
-        const response = await api.get('/admin/brands/');
+    getAll: async (params?: {
+        skip?: number;
+        limit?: number;
+        name?: string;
+        status?: string;
+    }): Promise<Brand[]> => {
+        const queryParams = new URLSearchParams();
+        if (params?.skip !== undefined) queryParams.append('skip', params.skip.toString());
+        if (params?.limit !== undefined) queryParams.append('limit', params.limit.toString());
+        if (params?.name) queryParams.append('name', params.name);
+        if (params?.status) queryParams.append('status', params.status);
+
+        const response = await api.get(`/admin/brands/?${queryParams.toString()}`);
         return response.data;
     },
 

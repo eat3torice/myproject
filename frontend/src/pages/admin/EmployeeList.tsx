@@ -1,9 +1,22 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { employeeService } from '../../services/employeeService';
+import { isAdmin } from '../../utils/roleUtils';
 import type { Employee } from '../../types';
 import './Common.css';
 
 export default function EmployeeList() {
+    const navigate = useNavigate();
+
+    // Check if user has admin access
+    useEffect(() => {
+        if (!isAdmin()) {
+            alert('Access denied. Admin privileges required.');
+            navigate('/admin');
+            return;
+        }
+    }, [navigate]);
+
     const [employees, setEmployees] = useState<Employee[]>([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
@@ -14,14 +27,27 @@ export default function EmployeeList() {
         Phone: '',
         Email: '',
     });
+    const [filters, setFilters] = useState({
+        name: '',
+        phone: '',
+        email: '',
+        status: '',
+    });
 
     useEffect(() => {
         loadData();
-    }, []);
+    }, [filters]);
 
     const loadData = async () => {
         try {
-            const data = await employeeService.getAll(0, 100);
+            const data = await employeeService.getAll({
+                skip: 0,
+                limit: 100,
+                name: filters.name || undefined,
+                phone: filters.phone || undefined,
+                email: filters.email || undefined,
+                status: filters.status || undefined,
+            });
             setEmployees(data);
         } catch (error) {
             console.error('Error loading employees:', error);
@@ -59,13 +85,25 @@ export default function EmployeeList() {
         setShowModal(true);
     };
 
-    const handleDelete = async (id: number) => {
-        if (!confirm('Are you sure you want to delete this employee?')) return;
+    const handleDeactivate = async (id: number) => {
+        if (!confirm('Are you sure you want to deactivate this employee?')) return;
         try {
-            await employeeService.delete(id);
+            await employeeService.deactivate(id);
             loadData();
-        } catch (error) {
-            alert('Failed to delete employee');
+        } catch (error: any) {
+            const errorMessage = error.response?.data?.detail || 'Failed to deactivate employee';
+            alert(errorMessage);
+        }
+    };
+
+    const handleReactivate = async (id: number) => {
+        if (!confirm('Are you sure you want to reactivate this employee?')) return;
+        try {
+            await employeeService.reactivate(id);
+            loadData();
+        } catch (error: any) {
+            const errorMessage = error.response?.data?.detail || 'Failed to reactivate employee';
+            alert(errorMessage);
         }
     };
 
@@ -76,6 +114,14 @@ export default function EmployeeList() {
             Phone: '',
             Email: '',
         });
+    };
+
+    const handleFilterChange = (field: string, value: string) => {
+        setFilters(prev => ({ ...prev, [field]: value }));
+    };
+
+    const clearFilters = () => {
+        setFilters({ name: '', phone: '', email: '', status: '' });
     };
 
     if (loading) return <div className="loading">Loading...</div>;
@@ -96,6 +142,55 @@ export default function EmployeeList() {
                 </button>
             </div>
 
+            {/* Filter Section */}
+            <div className="filter-section">
+                <div className="filter-row">
+                    <div className="filter-group">
+                        <label>Search by Name:</label>
+                        <input
+                            type="text"
+                            value={filters.name}
+                            onChange={(e) => handleFilterChange('name', e.target.value)}
+                            placeholder="Enter employee name..."
+                        />
+                    </div>
+                    <div className="filter-group">
+                        <label>Phone:</label>
+                        <input
+                            type="text"
+                            value={filters.phone}
+                            onChange={(e) => handleFilterChange('phone', e.target.value)}
+                            placeholder="Enter phone number..."
+                        />
+                    </div>
+                    <div className="filter-group">
+                        <label>Email:</label>
+                        <input
+                            type="email"
+                            value={filters.email}
+                            onChange={(e) => handleFilterChange('email', e.target.value)}
+                            placeholder="Enter email..."
+                        />
+                    </div>
+                    <div className="filter-group">
+                        <label>Status:</label>
+                        <select
+                            value={filters.status}
+                            onChange={(e) => handleFilterChange('status', e.target.value)}
+                        >
+                            <option value="">All Status</option>
+                            <option value="ACTIVE">Active</option>
+                            <option value="INACTIVE">Inactive</option>
+                        </select>
+                    </div>
+                    <div className="filter-group">
+                        <button onClick={clearFilters} className="btn-secondary">
+                            Clear Filters
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <div className="table-container">
                 <table>
                     <thead>
@@ -105,6 +200,7 @@ export default function EmployeeList() {
                             <th>Name</th>
                             <th>Phone</th>
                             <th>Email</th>
+                            <th>Status</th>
                             <th>Created</th>
                             <th>Actions</th>
                         </tr>
@@ -117,18 +213,28 @@ export default function EmployeeList() {
                                 <td>{employee.Name}</td>
                                 <td>{employee.Phone || 'N/A'}</td>
                                 <td>{employee.Email || 'N/A'}</td>
+                                <td>{employee.Status || 'ACTIVE'}</td>
                                 <td>{employee.Creation_date ? new Date(employee.Creation_date).toLocaleDateString() : 'N/A'}</td>
                                 <td>
                                     <div className="action-buttons">
                                         <button onClick={() => handleEdit(employee)} className="btn-edit">
                                             Edit
                                         </button>
-                                        <button
-                                            onClick={() => handleDelete(employee.PK_Employee)}
-                                            className="btn-delete"
-                                        >
-                                            Delete
-                                        </button>
+                                        {employee.Status === 'ACTIVE' ? (
+                                            <button
+                                                onClick={() => handleDeactivate(employee.PK_Employee)}
+                                                className="btn-delete"
+                                            >
+                                                Deactivate
+                                            </button>
+                                        ) : (
+                                            <button
+                                                onClick={() => handleReactivate(employee.PK_Employee)}
+                                                className="btn-success"
+                                            >
+                                                Reactivate
+                                            </button>
+                                        )}
                                     </div>
                                 </td>
                             </tr>
@@ -137,65 +243,63 @@ export default function EmployeeList() {
                 </table>
             </div>
 
-            {
-                showModal && (
-                    <div className="modal-overlay" onClick={() => setShowModal(false)}>
-                        <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                            <h2>{editingEmployee ? 'Edit Employee' : 'Add Employee'}</h2>
-                            <form onSubmit={handleSubmit}>
-                                <div className="form-group">
-                                    <label>Account ID *</label>
-                                    <input
-                                        type="number"
-                                        value={formData.AccountID}
-                                        onChange={(e) =>
-                                            setFormData({ ...formData, AccountID: parseInt(e.target.value) })
-                                        }
-                                        required
-                                    />
-                                </div>
-                                <div className="form-group">
-                                    <label>Name *</label>
-                                    <input
-                                        type="text"
-                                        value={formData.Name}
-                                        onChange={(e) => setFormData({ ...formData, Name: e.target.value })}
-                                        required
-                                    />
-                                </div>
-                                <div className="form-group">
-                                    <label>Phone</label>
-                                    <input
-                                        type="text"
-                                        value={formData.Phone}
-                                        onChange={(e) => setFormData({ ...formData, Phone: e.target.value })}
-                                    />
-                                </div>
-                                <div className="form-group">
-                                    <label>Email</label>
-                                    <input
-                                        type="email"
-                                        value={formData.Email}
-                                        onChange={(e) => setFormData({ ...formData, Email: e.target.value })}
-                                    />
-                                </div>
-                                <div className="modal-actions">
-                                    <button type="submit" className="btn-primary">
-                                        {editingEmployee ? 'Update' : 'Create'}
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowModal(false)}
-                                        className="btn-secondary"
-                                    >
-                                        Cancel
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
+            {showModal && (
+                <div className="modal-overlay" onClick={() => setShowModal(false)}>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                        <h2>{editingEmployee ? 'Edit Employee' : 'Add Employee'}</h2>
+                        <form onSubmit={handleSubmit}>
+                            <div className="form-group">
+                                <label>Account ID *</label>
+                                <input
+                                    type="number"
+                                    value={formData.AccountID}
+                                    onChange={(e) =>
+                                        setFormData({ ...formData, AccountID: parseInt(e.target.value) })
+                                    }
+                                    required
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>Name *</label>
+                                <input
+                                    type="text"
+                                    value={formData.Name}
+                                    onChange={(e) => setFormData({ ...formData, Name: e.target.value })}
+                                    required
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>Phone</label>
+                                <input
+                                    type="text"
+                                    value={formData.Phone}
+                                    onChange={(e) => setFormData({ ...formData, Phone: e.target.value })}
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>Email</label>
+                                <input
+                                    type="email"
+                                    value={formData.Email}
+                                    onChange={(e) => setFormData({ ...formData, Email: e.target.value })}
+                                />
+                            </div>
+                            <div className="modal-actions">
+                                <button type="submit" className="btn-primary">
+                                    {editingEmployee ? 'Update' : 'Create'}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowModal(false)}
+                                    className="btn-secondary"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </form>
                     </div>
-                )
-            }
-        </div >
+                </div>
+            )}
+        </div>
     );
 }

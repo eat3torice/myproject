@@ -45,10 +45,10 @@ export default function POSOrder() {
     const loadData = async () => {
         try {
             const [customersData, variationsData, categoriesData, productsData] = await Promise.all([
-                customerService.getAll(0, 100),
+                customerService.getAll({ skip: 0, limit: 100 }),
                 variationService.getAll(0, 200),
-                categoryService.getAll(),
-                productService.getAll(0, 100),
+                categoryService.getAll({ skip: 0, limit: 100 }),
+                productService.getAll({ skip: 0, limit: 100 }),
             ]);
             setCustomers(customersData);
             setAllVariations(variationsData);

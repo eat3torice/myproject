@@ -18,16 +18,19 @@ export default function AdminLogin() {
         try {
             const response = await authService.login({ username, password });
 
-            // Check if user has admin role (role_id = 1)
-            if (response.role_id !== 1) {
-                setError('Access denied. Admin privileges required.');
+            // Check if user has admin or employee role (role_id = 1 for ADMIN, 18 for EMPLOYEE)
+            if (response.role_id !== 1 && response.role_id !== 18) {
+                setError('Access denied. Only Admin and Employee accounts can access the admin panel.');
                 return;
             }
 
             authService.setToken(response.access_token);
+            // Store role information for role-based UI
+            localStorage.setItem('userRole', response.role_id.toString());
             navigate('/admin');
         } catch (err: any) {
-            setError(err.response?.data?.detail || 'Invalid username or password');
+            const errorMessage = err.response?.data?.detail || 'Login failed. Please try again.';
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }

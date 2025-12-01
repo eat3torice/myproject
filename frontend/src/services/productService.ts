@@ -2,8 +2,21 @@ import api from '../config/api';
 import type { Product } from '../types';
 
 export const productService = {
-    getAll: async (skip = 0, limit = 10): Promise<Product[]> => {
-        const response = await api.get(`/admin/products/?skip=${skip}&limit=${limit}`);
+    getAll: async (params?: {
+        skip?: number;
+        limit?: number;
+        name?: string;
+        category_id?: number;
+        brand_id?: number;
+    }): Promise<Product[]> => {
+        const queryParams = new URLSearchParams();
+        if (params?.skip !== undefined) queryParams.append('skip', params.skip.toString());
+        if (params?.limit !== undefined) queryParams.append('limit', params.limit.toString());
+        if (params?.name) queryParams.append('name', params.name);
+        if (params?.category_id !== undefined) queryParams.append('category_id', params.category_id.toString());
+        if (params?.brand_id !== undefined) queryParams.append('brand_id', params.brand_id.toString());
+
+        const response = await api.get(`/admin/products/?${queryParams.toString()}`);
         return response.data;
     },
 

@@ -12,14 +12,23 @@ export default function CategoryList() {
         Name: '',
         Status: 'ACTIVE',
     });
+    const [filters, setFilters] = useState({
+        name: '',
+        status: '',
+    });
 
     useEffect(() => {
         loadData();
-    }, []);
+    }, [filters]);
 
     const loadData = async () => {
         try {
-            const data = await categoryService.getAll();
+            const data = await categoryService.getAll({
+                skip: 0,
+                limit: 100,
+                name: filters.name || undefined,
+                status: filters.status || undefined,
+            });
             setCategories(data);
         } catch (error) {
             console.error('Error loading categories:', error);
@@ -72,6 +81,14 @@ export default function CategoryList() {
         });
     };
 
+    const handleFilterChange = (field: string, value: string) => {
+        setFilters(prev => ({ ...prev, [field]: value }));
+    };
+
+    const clearFilters = () => {
+        setFilters({ name: '', status: '' });
+    };
+
     if (loading) return <div className="loading">Loading...</div>;
 
     return (
@@ -88,6 +105,37 @@ export default function CategoryList() {
                 >
                     + Add Category
                 </button>
+            </div>
+
+            {/* Filter Section */}
+            <div className="filter-section">
+                <div className="filter-row">
+                    <div className="filter-group">
+                        <label>Search by Name:</label>
+                        <input
+                            type="text"
+                            value={filters.name}
+                            onChange={(e) => handleFilterChange('name', e.target.value)}
+                            placeholder="Enter category name..."
+                        />
+                    </div>
+                    <div className="filter-group">
+                        <label>Status:</label>
+                        <select
+                            value={filters.status}
+                            onChange={(e) => handleFilterChange('status', e.target.value)}
+                        >
+                            <option value="">All Status</option>
+                            <option value="ACTIVE">Active</option>
+                            <option value="INACTIVE">Inactive</option>
+                        </select>
+                    </div>
+                    <div className="filter-actions">
+                        <button onClick={clearFilters} className="btn-secondary">
+                            Clear Filters
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <div className="table-container">

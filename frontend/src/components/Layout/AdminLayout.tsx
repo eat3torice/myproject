@@ -1,5 +1,6 @@
 import { Link, Outlet, useNavigate } from 'react-router-dom';
 import { authService } from '../../services/authService';
+import { isAdmin } from '../../utils/roleUtils';
 import './AdminLayout.css';
 
 export default function AdminLayout() {
@@ -32,9 +33,11 @@ export default function AdminLayout() {
                     <Link to="/admin/customers" className="nav-item">
                         👥 Customers
                     </Link>
-                    <Link to="/admin/employees" className="nav-item">
-                        👔 Employees
-                    </Link>
+                    {isAdmin() && (
+                        <Link to="/admin/employees" className="nav-item">
+                            👔 Employees
+                        </Link>
+                    )}
                     <Link to="/admin/orders" className="nav-item">
                         🛒 Orders
                     </Link>

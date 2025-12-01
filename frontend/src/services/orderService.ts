@@ -3,8 +3,23 @@ import type { Order } from '../types';
 import type { OrderDetail } from '../types/order';
 
 export const orderService = {
-    getAll: async (skip: number = 0, limit: number = 100): Promise<Order[]> => {
-        const response = await api.get(`/admin/orders/?skip=${skip}&limit=${limit}`);
+    getAll: async (params?: {
+        skip?: number;
+        limit?: number;
+        status?: string;
+        customer_id?: number;
+        start_date?: string;
+        end_date?: string;
+    }): Promise<Order[]> => {
+        const queryParams = new URLSearchParams();
+        if (params?.skip !== undefined) queryParams.append('skip', params.skip.toString());
+        if (params?.limit !== undefined) queryParams.append('limit', params.limit.toString());
+        if (params?.status) queryParams.append('status', params.status);
+        if (params?.customer_id !== undefined) queryParams.append('customer_id', params.customer_id.toString());
+        if (params?.start_date) queryParams.append('start_date', params.start_date);
+        if (params?.end_date) queryParams.append('end_date', params.end_date);
+
+        const response = await api.get(`/admin/orders/?${queryParams.toString()}`);
         return response.data;
     },
 
