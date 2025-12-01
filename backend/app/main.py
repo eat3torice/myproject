@@ -44,6 +44,13 @@ app.add_middleware(
 # Serve static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+
+@app.get("/")
+def health_check():
+    """Health check endpoint"""
+    return {"status": "ok", "message": "Backend is running"}
+
+
 # ✅ Tạo bảng DB
 Base.metadata.create_all(bind=engine)
 
