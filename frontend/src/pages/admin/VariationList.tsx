@@ -140,7 +140,7 @@ export default function VariationList() {
         try {
             // Note: This assumes variation_router has upload endpoint
             // You may need to adjust the API call based on your backend
-            const response = await fetch(`http://127.0.0.1:8000/admin/variations/${uploadingVariation.PK_Variation}/upload-image`, {
+            const response = await fetch(`${API_BASE_URL}/admin/variations/${uploadingVariation.PK_Variation}/upload-image`, {
                 method: 'POST',
                 body: formDataUpload,
                 headers: {
