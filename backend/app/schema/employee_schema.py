@@ -29,6 +29,7 @@ class EmployeeResponse(BaseModel):
     Name: str
     Phone: Optional[str]
     Email: Optional[str]
+    Status: Optional[str]  # Account status
     Creation_date: Optional[datetime]
     Edit_date: Optional[datetime]
 

@@ -14,7 +14,7 @@ class VariationCreate(BaseModel):
     Material: Optional[str] = None
     Size: Optional[str] = None
     Description: Optional[str] = None
-    Status: Optional[str] = "active"
+    Status: Optional[str] = "ACTIVE"
 
     class Config:
         from_attributes = True

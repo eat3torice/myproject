@@ -23,7 +23,7 @@ class VariationSchema(BaseModel):
     Size: Optional[str]
     Description: Optional[str]
     Sold: Optional[int] = 0
-    Status: Optional[str] = "active"
+    Status: Optional[str] = "ACTIVE"
     images: Optional[List[ImagesSchema]] = []
 
     class Config:

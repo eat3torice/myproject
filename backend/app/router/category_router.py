@@ -10,11 +10,29 @@ from app.service.category_service import CategoryService
 router = APIRouter(prefix="/admin/categories", tags=["Admin - Categories"])
 
 
+from typing import List, Optional
+
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy.orm import Session
+
+from app.database.session import get_db
+from app.schema.category_schema import CategoryCreate, CategoryResponse, CategoryUpdate
+from app.service.category_service import CategoryService
+
+router = APIRouter(prefix="/admin/categories", tags=["Admin - Categories"])
+
+
 @router.get("/", response_model=List[CategoryResponse])
-def list_categories(skip: int = Query(0, ge=0), limit: int = Query(100, le=1000), db: Session = Depends(get_db)):
-    """Lấy danh sách tất cả danh mục"""
+def list_categories(
+    skip: int = Query(0, ge=0, description="Number of records to skip"),
+    limit: int = Query(100, le=1000, description="Maximum number of records to return"),
+    name: Optional[str] = Query(None, description="Filter by category name (partial match)"),
+    status: Optional[str] = Query(None, description="Filter by status (active/inactive)"),
+    db: Session = Depends(get_db)
+):
+    """Lấy danh sách tất cả danh mục với bộ lọc và phân trang"""
     service = CategoryService(db)
-    return service.get_categories(skip, limit)
+    return service.get_categories(skip=skip, limit=limit, name=name, status=status)
 
 
 @router.get("/{category_id}", response_model=CategoryResponse)

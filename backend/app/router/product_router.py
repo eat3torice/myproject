@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
@@ -11,9 +11,16 @@ router = APIRouter(prefix="/admin/products", tags=["Admin - Products"])
 
 
 @router.get("/", response_model=List[ProductResponse])
-def list_products(skip: int = Query(0, ge=0), limit: int = Query(10, le=100), db: Session = Depends(get_db)):
+def list_products(
+    skip: int = Query(0, ge=0, description="Number of records to skip"),
+    limit: int = Query(10, le=100, description="Maximum number of records to return"),
+    name: Optional[str] = Query(None, description="Filter by product name (partial match)"),
+    category_id: Optional[int] = Query(None, description="Filter by category ID"),
+    brand_id: Optional[int] = Query(None, description="Filter by brand ID"),
+    db: Session = Depends(get_db)
+):
     service = ProductService(db)
-    return service.get_products(skip, limit)
+    return service.get_products(skip=skip, limit=limit, name=name, category_id=category_id, brand_id=brand_id)
 
 
 @router.get("/{product_id}", response_model=ProductResponse)

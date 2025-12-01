@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from typing import Optional
 
 from app.model.product_model import Product
 from app.schema.product_schema import ProductCreate
@@ -8,9 +9,20 @@ class ProductService:
     def __init__(self, db: Session):
         self.db = db
 
-    # ✅ Lấy danh sách sản phẩm (có phân trang)
-    def get_products(self, skip: int = 0, limit: int = 10):
-        return self.db.query(Product).offset(skip).limit(limit).all()
+    # ✅ Lấy danh sách sản phẩm (có phân trang và bộ lọc)
+    def get_products(self, skip: int = 0, limit: int = 10, name: Optional[str] = None,
+                    category_id: Optional[int] = None, brand_id: Optional[int] = None):
+        query = self.db.query(Product)
+
+        # Apply filters
+        if name:
+            query = query.filter(Product.Name.ilike(f"%{name}%"))
+        if category_id:
+            query = query.filter(Product.CategoryID == category_id)
+        if brand_id:
+            query = query.filter(Product.BrandID == brand_id)
+
+        return query.offset(skip).limit(limit).all()
 
     # ✅ Lấy chi tiết sản phẩm
     def get_product_by_id(self, product_id: int):

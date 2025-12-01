@@ -11,10 +11,16 @@ router = APIRouter(prefix="/admin/brands", tags=["Admin - Brands"])
 
 
 @router.get("/", response_model=List[BrandResponse])
-def list_brands(skip: int = Query(0, ge=0), limit: int = Query(100, le=1000), db: Session = Depends(get_db)):
-    """Lấy danh sách tất cả thương hiệu"""
+def list_brands(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, le=1000),
+    name: str = Query(None, description="Lọc theo tên thương hiệu (không phân biệt hoa thường)"),
+    status: str = Query(None, description="Lọc theo trạng thái (active/inactive)"),
+    db: Session = Depends(get_db)
+):
+    """Lấy danh sách tất cả thương hiệu với khả năng lọc và phân trang"""
     service = BrandService(db)
-    return service.get_brands(skip, limit)
+    return service.get_brands(skip, limit, name, status)
 
 
 @router.get("/{brand_id}", response_model=BrandResponse)

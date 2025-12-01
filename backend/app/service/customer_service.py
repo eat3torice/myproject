@@ -10,8 +10,31 @@ class CustomerService:
     def __init__(self, db: Session):
         self.db = db
 
-    def get_customers(self, skip: int = 0, limit: int = 100):
-        return self.db.query(Customer).offset(skip).limit(limit).all()
+from datetime import datetime
+from typing import Optional
+
+from sqlalchemy.orm import Session
+
+from app.model.customer_model import Customer
+from app.schema.customer_schema import CustomerCreate, CustomerUpdate
+
+
+class CustomerService:
+    def __init__(self, db: Session):
+        self.db = db
+
+    def get_customers(self, skip: int = 0, limit: int = 100, name: Optional[str] = None, phone: Optional[str] = None, status: Optional[str] = None):
+        query = self.db.query(Customer)
+
+        # Apply filters
+        if name:
+            query = query.filter(Customer.Name.ilike(f"%{name}%"))
+        if phone:
+            query = query.filter(Customer.Phone.ilike(f"%{phone}%"))
+        if status:
+            query = query.filter(Customer.Status == status)
+
+        return query.offset(skip).limit(limit).all()
 
     def get_customer_by_id(self, customer_id: int):
         return self.db.query(Customer).filter(Customer.PK_Customer == customer_id).first()

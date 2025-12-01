@@ -15,7 +15,7 @@ with engine.connect() as conn:
             print(f"  {row}")
 
     # Check active variations with stock
-    result = conn.execute(text("SELECT COUNT(*) FROM variation WHERE status = 'active' AND quantity > 0"))
+    result = conn.execute(text("SELECT COUNT(*) FROM variation WHERE status = 'ACTIVE' AND quantity > 0"))
     active_count = result.scalar()
     print(f"\nActive variations with stock: {active_count}")
 

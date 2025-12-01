@@ -9,21 +9,21 @@
 ## ADMIN ENDPOINTS
 
 ### Products (Sản phẩm)
-- GET `/admin/products/` - Lấy danh sách sản phẩm
+- GET `/admin/products/` - Lấy danh sách sản phẩm (có filter: name, category_id, brand_id)
 - GET `/admin/products/{product_id}` - Lấy chi tiết sản phẩm
 - POST `/admin/products/` - Tạo sản phẩm mới
 - PUT `/admin/products/{product_id}` - Cập nhật sản phẩm
 - DELETE `/admin/products/{product_id}` - Xóa sản phẩm
 
 ## Categories (Danh mục)
-- GET `/admin/categories/` - Lấy danh sách danh mục
+- GET `/admin/categories/` - Lấy danh sách danh mục (có filter: name, status)
 - GET `/admin/categories/{category_id}` - Lấy chi tiết danh mục
 - POST `/admin/categories/` - Tạo danh mục mới
 - PUT `/admin/categories/{category_id}` - Cập nhật danh mục
 - DELETE `/admin/categories/{category_id}` - Xóa danh mục
 
 ## Brands (Thương hiệu)
-- GET `/admin/brands/` - Lấy danh sách thương hiệu
+- GET `/admin/brands/` - Lấy danh sách thương hiệu (có filter: name, status)
 - GET `/admin/brands/{brand_id}` - Lấy chi tiết thương hiệu
 - POST `/admin/brands/` - Tạo thương hiệu mới
 - PUT `/admin/brands/{brand_id}` - Cập nhật thương hiệu
@@ -38,21 +38,22 @@
 - PATCH `/admin/variations/{variation_id}/quantity` - Cập nhật số lượng tồn kho
 
 ## Customers (Khách hàng)
-- GET `/admin/customers/` - Lấy danh sách khách hàng
+- GET `/admin/customers/` - Lấy danh sách khách hàng (có filter: name, phone, status)
 - GET `/admin/customers/{customer_id}` - Lấy chi tiết khách hàng
 - POST `/admin/customers/` - Tạo khách hàng mới
 - PUT `/admin/customers/{customer_id}` - Cập nhật khách hàng
 - DELETE `/admin/customers/{customer_id}` - Xóa khách hàng
 
 ## Employees (Nhân viên)
-- GET `/admin/employees/` - Lấy danh sách nhân viên
+- GET `/admin/employees/` - Lấy danh sách nhân viên (có filter: name, phone, email)
 - GET `/admin/employees/{employee_id}` - Lấy chi tiết nhân viên
 - POST `/admin/employees/` - Tạo nhân viên mới
 - PUT `/admin/employees/{employee_id}` - Cập nhật nhân viên
-- DELETE `/admin/employees/{employee_id}` - Xóa nhân viên
+- PUT `/admin/employees/{employee_id}/deactivate` - Vô hiệu hóa tài khoản nhân viên
+- PUT `/admin/employees/{employee_id}/reactivate` - Kích hoạt lại tài khoản nhân viên
 
 ## Orders (Đơn hàng)
-- GET `/admin/orders/` - Lấy danh sách đơn hàng (có thể lọc theo status)
+- GET `/admin/orders/` - Lấy danh sách đơn hàng (có filter: status, customer_id, start_date, end_date)
 - GET `/admin/orders/statistics` - Lấy thống kê đơn hàng
 - GET `/admin/orders/{order_id}` - Lấy chi tiết đơn hàng
 - GET `/admin/orders/{order_id}/lines` - Lấy danh sách sản phẩm trong đơn

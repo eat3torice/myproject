@@ -8,8 +8,27 @@ class CategoryService:
     def __init__(self, db: Session):
         self.db = db
 
-    def get_categories(self, skip: int = 0, limit: int = 100):
-        return self.db.query(Category).offset(skip).limit(limit).all()
+from sqlalchemy.orm import Session
+from typing import Optional
+
+from app.model.category_model import Category
+from app.schema.category_schema import CategoryCreate, CategoryUpdate
+
+
+class CategoryService:
+    def __init__(self, db: Session):
+        self.db = db
+
+    def get_categories(self, skip: int = 0, limit: int = 100, name: Optional[str] = None, status: Optional[str] = None):
+        query = self.db.query(Category)
+
+        # Apply filters
+        if name:
+            query = query.filter(Category.Name.ilike(f"%{name}%"))
+        if status:
+            query = query.filter(Category.Status == status)
+
+        return query.offset(skip).limit(limit).all()
 
     def get_category_by_id(self, category_id: int):
         return self.db.query(Category).filter(Category.PK_Category == category_id).first()

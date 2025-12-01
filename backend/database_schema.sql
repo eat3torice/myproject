@@ -94,6 +94,7 @@ CREATE TABLE IF NOT EXISTS public.employee
     name character varying(255) COLLATE pg_catalog."default",
     phone character varying(20) COLLATE pg_catalog."default",
     email character varying(255) COLLATE pg_catalog."default",
+    status character varying(20) COLLATE pg_catalog."default" DEFAULT 'ACTIVE',
     creation_date timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     edit_date timestamp with time zone,
     CONSTRAINT employee_pkey PRIMARY KEY (pk_employee),

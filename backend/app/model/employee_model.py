@@ -12,6 +12,7 @@ class Employee(Base):
     Name = Column("name", String(255))
     Phone = Column("phone", String(20))
     Email = Column("email", String(255))
+    Status = Column("status", String(20), default="ACTIVE")
     Creation_date = Column("creation_date", TIMESTAMP)
     Edit_date = Column("edit_date", TIMESTAMP)
 

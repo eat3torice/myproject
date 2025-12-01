@@ -10,7 +10,7 @@ class CustomerCreate(BaseModel):
     Address: Optional[str] = None
     Phone: Optional[str] = None
     Note: Optional[str] = None
-    Status: Optional[str] = "active"
+    Status: Optional[str] = "ACTIVE"
 
     class Config:
         from_attributes = True

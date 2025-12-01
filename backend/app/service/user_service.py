@@ -37,7 +37,7 @@ class UserService:
         # Create account
         hashed_password = pwd_hasher.hash(user_data.password)
         account = Account(
-            Username=user_data.username, Password=hashed_password, RoleID=customer_role.PK_Role, Status="active"
+            Username=user_data.username, Password=hashed_password, RoleID=customer_role.PK_Role, Status="ACTIVE"
         )
         self.db.add(account)
         self.db.flush()
@@ -48,7 +48,7 @@ class UserService:
             Name=user_data.name,
             Phone=user_data.phone,
             Address=user_data.address,
-            Status="active",
+            Status="ACTIVE",
             Creation_date=datetime.now(),
         )
         self.db.add(customer)

@@ -8,8 +8,27 @@ class BrandService:
     def __init__(self, db: Session):
         self.db = db
 
-    def get_brands(self, skip: int = 0, limit: int = 100):
-        return self.db.query(Brand).offset(skip).limit(limit).all()
+from sqlalchemy.orm import Session
+from typing import Optional
+
+from app.model.brand_model import Brand
+from app.schema.brand_schema import BrandCreate, BrandUpdate
+
+
+class BrandService:
+    def __init__(self, db: Session):
+        self.db = db
+
+    def get_brands(self, skip: int = 0, limit: int = 100, name: Optional[str] = None, status: Optional[str] = None):
+        query = self.db.query(Brand)
+
+        # Apply filters
+        if name:
+            query = query.filter(Brand.Name.ilike(f"%{name}%"))
+        if status:
+            query = query.filter(Brand.Status == status)
+
+        return query.offset(skip).limit(limit).all()
 
     def get_brand_by_id(self, brand_id: int):
         return self.db.query(Brand).filter(Brand.PK_Brand == brand_id).first()

@@ -15,12 +15,15 @@ router = APIRouter(prefix="/admin/orders", tags=["Admin - Orders"])
 def list_orders(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, le=1000),
-    status: Optional[str] = None,
+    status: Optional[str] = Query(None, description="Lọc theo trạng thái đơn hàng"),
+    customer_id: Optional[int] = Query(None, description="Lọc theo ID khách hàng"),
+    start_date: Optional[datetime] = Query(None, description="Lọc từ ngày (YYYY-MM-DD)"),
+    end_date: Optional[datetime] = Query(None, description="Lọc đến ngày (YYYY-MM-DD)"),
     db: Session = Depends(get_db),
 ):
-    """Lấy danh sách tất cả đơn hàng"""
+    """Lấy danh sách tất cả đơn hàng với khả năng lọc và phân trang"""
     service = OrderService(db)
-    return service.get_orders(skip, limit, status)
+    return service.get_orders(skip, limit, status, customer_id, start_date, end_date)
 
 
 @router.get("/statistics")

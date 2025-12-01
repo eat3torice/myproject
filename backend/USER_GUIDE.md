@@ -182,7 +182,8 @@ DELETE /admin/customers/1
 GET /admin/employees/
 POST /admin/employees/
 PUT /admin/employees/1
-DELETE /admin/employees/1
+PUT /admin/employees/1/deactivate  # Vô hiệu hóa tài khoản nhân viên
+PUT /admin/employees/1/reactivate  # Kích hoạt lại tài khoản nhân viên
 ```
 
 ### 8. Quản lý đơn hàng
@@ -204,6 +205,11 @@ Thêm header sau vào request:
 ```
 Authorization: Bearer <access_token>
 ```
+
+### Vai trò người dùng (Role IDs):
+- `1`: ADMIN - Quản trị viên, có quyền truy cập tất cả chức năng admin bao gồm quản lý nhân viên
+- `2`: CUSTOMER - Khách hàng, có quyền truy cập chức năng người dùng
+- `18`: EMPLOYEE - Nhân viên, có quyền truy cập tất cả chức năng admin **trừ** quản lý nhân viên
 
 ---
 

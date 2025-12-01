@@ -11,10 +11,17 @@ router = APIRouter(prefix="/admin/customers", tags=["Admin - Customers"])
 
 
 @router.get("/", response_model=List[CustomerResponse])
-def list_customers(skip: int = Query(0, ge=0), limit: int = Query(100, le=1000), db: Session = Depends(get_db)):
-    """Lấy danh sách tất cả khách hàng"""
+def list_customers(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, le=1000),
+    name: str = Query(None, description="Lọc theo tên khách hàng (không phân biệt hoa thường)"),
+    phone: str = Query(None, description="Lọc theo số điện thoại"),
+    status: str = Query(None, description="Lọc theo trạng thái (ACTIVE/INACTIVE)"),
+    db: Session = Depends(get_db)
+):
+    """Lấy danh sách tất cả khách hàng với khả năng lọc và phân trang"""
     service = CustomerService(db)
-    return service.get_customers(skip, limit)
+    return service.get_customers(skip, limit, name, phone, status)
 
 
 @router.get("/{customer_id}", response_model=CustomerResponse)

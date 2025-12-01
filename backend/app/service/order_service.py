@@ -13,10 +13,34 @@ class OrderService:
     def __init__(self, db: Session):
         self.db = db
 
-    def get_orders(self, skip: int = 0, limit: int = 100, status: str = None):
+from datetime import datetime
+from decimal import Decimal
+from typing import Optional
+
+from sqlalchemy.orm import Session
+
+from app.model.orderline_model import OrderLine
+from app.model.posorder_model import POSOrder
+from app.model.variation_model import Variation
+from app.schema.order_schema import OrderCreate, OrderUpdate
+
+
+class OrderService:
+    def __init__(self, db: Session):
+        self.db = db
+
+    def get_orders(self, skip: int = 0, limit: int = 100, status: Optional[str] = None, customer_id: Optional[int] = None, start_date: Optional[datetime] = None, end_date: Optional[datetime] = None):
         query = self.db.query(POSOrder)
+
         if status:
             query = query.filter(POSOrder.Status == status)
+        if customer_id:
+            query = query.filter(POSOrder.CustomerID == customer_id)
+        if start_date:
+            query = query.filter(POSOrder.Order_Date >= start_date)
+        if end_date:
+            query = query.filter(POSOrder.Order_Date <= end_date)
+
         return query.order_by(POSOrder.Creation_date.desc()).offset(skip).limit(limit).all()
 
     def get_order_by_id(self, order_id: int):
