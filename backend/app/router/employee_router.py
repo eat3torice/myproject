@@ -29,7 +29,11 @@ def list_employees(
 
 
 @router.get("/{employee_id}", response_model=EmployeeResponse)
-def get_employee(employee_id: int, db: Session = Depends(get_db), current_admin: Account = Depends(get_current_admin_account)):
+def get_employee(
+    employee_id: int,
+    db: Session = Depends(get_db),
+    current_admin: Account = Depends(get_current_admin_account)
+):
     """Lấy chi tiết một nhân viên"""
     service = EmployeeService(db)
     employee = service.get_employee_by_id(employee_id)
@@ -39,14 +43,23 @@ def get_employee(employee_id: int, db: Session = Depends(get_db), current_admin:
 
 
 @router.post("/", response_model=EmployeeResponse)
-def create_employee(employee: EmployeeCreate, db: Session = Depends(get_db), current_admin: Account = Depends(get_current_admin_account)):
+def create_employee(
+    employee: EmployeeCreate,
+    db: Session = Depends(get_db),
+    current_admin: Account = Depends(get_current_admin_account)
+):
     """Tạo nhân viên mới"""
     service = EmployeeService(db)
     return service.create_employee(employee)
 
 
 @router.put("/{employee_id}", response_model=EmployeeResponse)
-def update_employee(employee_id: int, employee: EmployeeUpdate, db: Session = Depends(get_db), current_admin: Account = Depends(get_current_admin_account)):
+def update_employee(
+    employee_id: int,
+    employee: EmployeeUpdate,
+    db: Session = Depends(get_db),
+    current_admin: Account = Depends(get_current_admin_account)
+):
     """Cập nhật nhân viên"""
     service = EmployeeService(db)
     updated = service.update_employee(employee_id, employee)
@@ -56,7 +69,11 @@ def update_employee(employee_id: int, employee: EmployeeUpdate, db: Session = De
 
 
 @router.put("/{employee_id}/deactivate")
-def deactivate_employee(employee_id: int, db: Session = Depends(get_db), current_admin: Account = Depends(get_current_admin_account)):
+def deactivate_employee(
+    employee_id: int,
+    db: Session = Depends(get_db),
+    current_admin: Account = Depends(get_current_admin_account)
+):
     """Vô hiệu hóa tài khoản nhân viên"""
     service = EmployeeService(db)
     deactivated = service.deactivate_employee(employee_id)
@@ -66,7 +83,11 @@ def deactivate_employee(employee_id: int, db: Session = Depends(get_db), current
 
 
 @router.put("/{employee_id}/reactivate")
-def reactivate_employee(employee_id: int, db: Session = Depends(get_db), current_admin: Account = Depends(get_current_admin_account)):
+def reactivate_employee(
+    employee_id: int,
+    db: Session = Depends(get_db),
+    current_admin: Account = Depends(get_current_admin_account)
+):
     """Kích hoạt lại tài khoản nhân viên"""
     service = EmployeeService(db)
     reactivated = service.reactivate_employee(employee_id)

@@ -55,7 +55,12 @@ class EmployeeService:
         return employees
 
     def get_employee_by_id(self, employee_id: int):
-        result = self.db.query(Employee, Account.Status.label('account_status')).join(Account, Employee.AccountID == Account.PK_Account).filter(Employee.PK_Employee == employee_id).first()
+        result = (
+            self.db.query(Employee, Account.Status.label('account_status'))
+            .join(Account, Employee.AccountID == Account.PK_Account)
+            .filter(Employee.PK_Employee == employee_id)
+            .first()
+        )
 
         if not result:
             return None
