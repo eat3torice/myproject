@@ -1,16 +1,4 @@
 from datetime import datetime
-
-from sqlalchemy.orm import Session
-
-from app.model.customer_model import Customer
-from app.schema.customer_schema import CustomerCreate, CustomerUpdate
-
-
-class CustomerService:
-    def __init__(self, db: Session):
-        self.db = db
-
-from datetime import datetime
 from typing import Optional
 
 from sqlalchemy.orm import Session
@@ -23,7 +11,14 @@ class CustomerService:
     def __init__(self, db: Session):
         self.db = db
 
-    def get_customers(self, skip: int = 0, limit: int = 100, name: Optional[str] = None, phone: Optional[str] = None, status: Optional[str] = None):
+    def get_customers(
+        self,
+        skip: int = 0,
+        limit: int = 100,
+        name: Optional[str] = None,
+        phone: Optional[str] = None,
+        status: Optional[str] = None,
+    ):
         query = self.db.query(Customer)
 
         # Apply filters

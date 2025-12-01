@@ -7,7 +7,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from app.database.base_class import Base
-import app.model  # Import all models to ensure they're registered with SQLAlchemy
 from app.model.product_model import Product
 from app.model.variation_model import Variation
 

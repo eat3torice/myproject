@@ -4,9 +4,11 @@ Script to create sample accounts for testing role-based access control
 """
 
 from sqlalchemy.orm import sessionmaker
+
+from app.auth.auth_service import AuthService
 from app.database.session import engine
 from app.model.account_model import Account
-from app.auth.auth_service import AuthService
+
 
 def create_sample_accounts():
     """Create sample accounts for testing"""

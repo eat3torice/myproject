@@ -1,15 +1,6 @@
-from sqlalchemy.orm import Session
-
-from app.model.brand_model import Brand
-from app.schema.brand_schema import BrandCreate, BrandUpdate
-
-
-class BrandService:
-    def __init__(self, db: Session):
-        self.db = db
-
-from sqlalchemy.orm import Session
 from typing import Optional
+
+from sqlalchemy.orm import Session
 
 from app.model.brand_model import Brand
 from app.schema.brand_schema import BrandCreate, BrandUpdate

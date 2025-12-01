@@ -1,20 +1,5 @@
 from datetime import datetime
 from decimal import Decimal
-
-from sqlalchemy.orm import Session
-
-from app.model.orderline_model import OrderLine
-from app.model.posorder_model import POSOrder
-from app.model.variation_model import Variation
-from app.schema.order_schema import OrderCreate, OrderUpdate
-
-
-class OrderService:
-    def __init__(self, db: Session):
-        self.db = db
-
-from datetime import datetime
-from decimal import Decimal
 from typing import Optional
 
 from sqlalchemy.orm import Session
@@ -29,7 +14,15 @@ class OrderService:
     def __init__(self, db: Session):
         self.db = db
 
-    def get_orders(self, skip: int = 0, limit: int = 100, status: Optional[str] = None, customer_id: Optional[int] = None, start_date: Optional[datetime] = None, end_date: Optional[datetime] = None):
+    def get_orders(
+        self,
+        skip: int = 0,
+        limit: int = 100,
+        status: Optional[str] = None,
+        customer_id: Optional[int] = None,
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None,
+    ):
         query = self.db.query(POSOrder)
 
         if status:

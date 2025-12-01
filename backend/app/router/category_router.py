@@ -10,14 +10,9 @@ from app.service.category_service import CategoryService
 router = APIRouter(prefix="/admin/categories", tags=["Admin - Categories"])
 
 
-from typing import List, Optional
+from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
-
-from app.database.session import get_db
-from app.schema.category_schema import CategoryCreate, CategoryResponse, CategoryUpdate
-from app.service.category_service import CategoryService
+from fastapi import APIRouter
 
 router = APIRouter(prefix="/admin/categories", tags=["Admin - Categories"])
 

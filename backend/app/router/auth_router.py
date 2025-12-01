@@ -32,18 +32,18 @@ def login(account: AccountLogin, db: Session = Depends(get_db)):
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Username does not exist")
         else:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect password")
-    
+
     # Check account status
     if db_account.Status != "ACTIVE":
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, 
+            status_code=status.HTTP_401_UNAUTHORIZED,
             detail=f"Account is {db_account.Status}. Please contact administrator."
         )
-    
+
     access_token = auth_service.create_access_token(data={"sub": db_account.Username})
     return {
-        "access_token": access_token, 
-        "token_type": "bearer", 
+        "access_token": access_token,
+        "token_type": "bearer",
         "role_id": db_account.RoleID,
         "account_status": db_account.Status
     }

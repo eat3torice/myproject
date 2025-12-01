@@ -1,16 +1,4 @@
 from datetime import datetime
-
-from sqlalchemy.orm import Session
-
-from app.model.employee_model import Employee
-from app.schema.employee_schema import EmployeeCreate, EmployeeUpdate
-
-
-class EmployeeService:
-    def __init__(self, db: Session):
-        self.db = db
-
-from datetime import datetime
 from typing import Optional
 
 from sqlalchemy.orm import Session
@@ -24,8 +12,18 @@ class EmployeeService:
     def __init__(self, db: Session):
         self.db = db
 
-    def get_employees(self, skip: int = 0, limit: int = 100, name: Optional[str] = None, phone: Optional[str] = None, email: Optional[str] = None, status: Optional[str] = None):
-        query = self.db.query(Employee, Account.Status.label('account_status')).join(Account, Employee.AccountID == Account.PK_Account)
+    def get_employees(
+        self,
+        skip: int = 0,
+        limit: int = 100,
+        name: Optional[str] = None,
+        phone: Optional[str] = None,
+        email: Optional[str] = None,
+        status: Optional[str] = None,
+    ):
+        query = self.db.query(Employee, Account.Status.label('account_status')).join(
+            Account, Employee.AccountID == Account.PK_Account
+        )
 
         # Apply filters
         if name:

@@ -4,12 +4,14 @@ Migration script to add status column to employee table
 """
 import os
 import sys
+
 from sqlalchemy import create_engine, text
 
 # Add the current directory to the path so we can import from app
 sys.path.insert(0, os.path.dirname(__file__))
 
 from app.core.config import settings
+
 
 def run_migration():
     """Add status column to employee table"""

@@ -4,8 +4,10 @@ Script to populate sample roles in the database
 """
 
 from sqlalchemy.orm import sessionmaker
+
 from app.database.session import engine
 from app.model.role_model import Role
+
 
 def populate_roles():
     """Populate basic roles"""

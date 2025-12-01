@@ -1,5 +1,6 @@
-from sqlalchemy.orm import Session
 from typing import Optional
+
+from sqlalchemy.orm import Session
 
 from app.model.product_model import Product
 from app.schema.product_schema import ProductCreate

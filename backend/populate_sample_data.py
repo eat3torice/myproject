@@ -4,9 +4,11 @@ Script to populate sample data for categories and brands
 """
 
 from sqlalchemy.orm import sessionmaker
+
 from app.database.session import engine
-from app.model.category_model import Category
 from app.model.brand_model import Brand
+from app.model.category_model import Category
+
 
 def populate_sample_data():
     """Populate sample categories and brands"""

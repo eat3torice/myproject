@@ -1,15 +1,6 @@
-from sqlalchemy.orm import Session
-
-from app.model.category_model import Category
-from app.schema.category_schema import CategoryCreate, CategoryUpdate
-
-
-class CategoryService:
-    def __init__(self, db: Session):
-        self.db = db
-
-from sqlalchemy.orm import Session
 from typing import Optional
+
+from sqlalchemy.orm import Session
 
 from app.model.category_model import Category
 from app.schema.category_schema import CategoryCreate, CategoryUpdate

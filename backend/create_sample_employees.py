@@ -4,10 +4,13 @@ Script to create sample employee records for testing
 """
 
 from datetime import datetime
+
 from sqlalchemy.orm import sessionmaker
+
 from app.database.session import engine
-from app.model.employee_model import Employee
 from app.model.account_model import Account
+from app.model.employee_model import Employee
+
 
 def create_sample_employees():
     """Create sample employee records linked to employee accounts"""
