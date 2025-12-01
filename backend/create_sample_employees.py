@@ -93,9 +93,15 @@ def create_sample_employees():
 
         # Show all employees
         print("\n👥 All Employee Records:")
-        employees = session.query(Employee, Account.Username).join(Account, Employee.AccountID == Account.PK_Account).all()
+        employees = session.query(Employee, Account.Username) \
+            .join(Account, Employee.AccountID == Account.PK_Account) \
+            .all()
         for employee, username in employees:
-            print(f"  ID: {employee.PK_Employee}, Account: {username}, Name: {employee.Name}, Phone: {employee.Phone}, Email: {employee.Email}, Status: {employee.Status}")
+            print(
+                f"  ID: {employee.PK_Employee}, Account: {username}, "
+                f"Name: {employee.Name}, Phone: {employee.Phone}, "
+                f"Email: {employee.Email}, Status: {employee.Status}"
+            )
 
     except Exception as e:
         session.rollback()

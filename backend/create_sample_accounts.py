@@ -82,10 +82,15 @@ def create_sample_accounts():
 
         # Show all accounts
         print("\n📋 All Sample Accounts:")
-        accounts = session.query(Account).filter(Account.Username.in_([acc["username"] for acc in sample_accounts])).all()
+        accounts = session.query(Account) \
+            .filter(Account.Username.in_([acc["username"] for acc in sample_accounts])) \
+            .all()
         for account in accounts:
             role_name = {1: "ADMIN", 18: "EMPLOYEE", 2: "CUSTOMER"}.get(account.RoleID, "UNKNOWN")
-            print(f"  {account.Username}: {role_name} (RoleID: {account.RoleID})")
+            print(
+                f"  {account.Username}: {role_name} "
+                f"(RoleID: {account.RoleID})"
+            )
 
     except Exception as e:
         session.rollback()
