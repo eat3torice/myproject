@@ -41,9 +41,6 @@ app.add_middleware(
     expose_headers=["*"],
 )
 
-# Serve static files
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
 
 @app.get("/")
 def health_check():
@@ -75,8 +72,11 @@ app.include_router(cart_router.router)
 app.include_router(user_order_router.router)
 app.include_router(address_router.router)
 
+# Serve static files (mount AFTER routers to avoid path conflicts)
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# ✅ Thêm security scheme để hiện nút “Authorize 🔒”
+
+# ✅ Thêm security scheme để hiện nút "Authorize 🔒"
 def custom_openapi():
     if app.openapi_schema:
         return app.openapi_schema
