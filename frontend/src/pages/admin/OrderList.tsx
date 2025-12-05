@@ -195,8 +195,8 @@ export default function OrderList() {
                             <tr key={order.PK_POSOrder}>
                                 <td><b>#{order.PK_POSOrder}</b></td>
                                 <td>{getCustomerName(order.CustomerID)}</td>
-                                <td style={{ color: '#059669', fontWeight: 600 }}>${order.Total_Amount}</td>
-                                <td>${order.Total_Payment}</td>
+                                <td style={{ color: '#059669', fontWeight: 600 }}>{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(Number(order.Total_Amount))}</td>
+                                <td>{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(Number(order.Total_Payment))}</td>
                                 <td>
                                     <span className={`status-badge status-${order.Status.toLowerCase()}`}>
                                         {order.Status}
@@ -277,7 +277,7 @@ export default function OrderList() {
                                     </div>
                                     <div>
                                         <small style={{ color: '#6b7280', textTransform: 'uppercase', fontSize: '11px', fontWeight: 700 }}>Total Amount</small>
-                                        <div style={{ color: '#059669', fontWeight: 700, fontSize: '18px' }}>${selectedOrder.Total_Amount}</div>
+                                        <div style={{ color: '#059669', fontWeight: 700, fontSize: '18px' }}>{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(Number(selectedOrder.Total_Amount))}</div>
                                     </div>
                                     {selectedOrder.ShippingAddress && (
                                         <div style={{ gridColumn: '1 / -1' }}>
@@ -311,8 +311,8 @@ export default function OrderList() {
                                                             <small style={{ color: '#6b7280' }}>ID: {line.PK_OrderLine}</small>
                                                         </td>
                                                         <td style={{ textAlign: 'center' }}>{line.Quantity}</td>
-                                                        <td style={{ textAlign: 'right' }}>${line.Unit_Price}</td>
-                                                        <td style={{ textAlign: 'right', fontWeight: 600 }}>${line.Price}</td>
+                                                        <td style={{ textAlign: 'right' }}>{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(Number(line.Unit_Price))}</td>
+                                                        <td style={{ textAlign: 'right', fontWeight: 600 }}>{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(Number(line.Price))}</td>
                                                     </tr>
                                                 ))}
                                             </tbody>

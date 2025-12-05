@@ -59,8 +59,8 @@ const getImageUrl = (imagePath: string) => {
     return `${cleanBase}/static/images/${cleanPath}`;
 };
 
-const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+const formatPrice = (amount: number) => {
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
 };
 
 export default function Shop() {
@@ -358,7 +358,7 @@ export default function Shop() {
                                                 <h3 className="card-title" title={product.Name}>{product.Name}</h3>
                                                 <div className="card-bottom">
                                                     <div className="price-wrap">
-                                                        <span className="price">{formatCurrency(product.Price)}</span>
+                                                        <span className="price">{formatPrice(product.Price)}</span>
                                                     </div>
                                                     {product.Color && (
                                                         <span

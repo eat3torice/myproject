@@ -1,4 +1,4 @@
-.login-container {
+.auth-container {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -8,7 +8,7 @@
     overflow: hidden;
 }
 
-.login-container::before {
+.auth-container::before {
     content: '';
     position: absolute;
     top: -50%;
@@ -30,7 +30,7 @@
     }
 }
 
-.login-box {
+.auth-card {
     background: white;
     padding: 45px;
     border-radius: 16px;
@@ -42,7 +42,7 @@
     border: 2px solid rgba(255, 255, 255, 0.2);
 }
 
-.login-box h1 {
+.auth-card h2 {
     margin: 0 0 10px;
     text-align: center;
     color: #2c3e50;
@@ -50,7 +50,7 @@
     font-weight: 700;
 }
 
-.login-subtitle {
+.auth-subtitle {
     text-align: center;
     color: #7f8c8d;
     margin: 0 0 30px;
@@ -93,7 +93,7 @@
     font-size: 14px;
 }
 
-.login-btn {
+.btn-primary {
     width: 100%;
     padding: 14px;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -107,74 +107,31 @@
     box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
 }
 
-.login-btn:hover:not(:disabled) {
+.btn-primary:hover:not(:disabled) {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
 }
 
-.login-btn:active:not(:disabled) {
+.btn-primary:active:not(:disabled) {
     transform: translateY(0);
 }
 
-.login-btn:disabled {
+.btn-primary:disabled {
     opacity: 0.6;
     cursor: not-allowed;
 }
 
-.forgot-password-link {
-    text-align: right;
-    margin-top: 10px;
-}
-
-.forgot-password-link a {
-    color: #667eea;
-    text-decoration: none;
-    font-size: 14px;
-}
-
-.forgot-password-link a:hover {
-    text-decoration: underline;
-}
-
-.login-footer {
-    margin-top: 25px;
+.auth-links {
+    margin-top: 20px;
     text-align: center;
 }
 
-.login-footer p {
-    color: #666;
-    margin-bottom: 10px;
-}
-
-.login-footer a {
+.auth-links a {
     color: #667eea;
     text-decoration: none;
-    font-weight: 500;
+    font-size: 14px;
 }
 
-.login-footer a:hover {
+.auth-links a:hover {
     text-decoration: underline;
-}
-
-.link-shop {
-    display: inline-block;
-    margin-top: 10px;
-    color: #7f8c8d;
-    font-size: 14px;
-}
-
-.admin-link-wrapper {
-    margin-top: 20px;
-    padding-top: 20px;
-    border-top: 1px solid #eee;
-}
-
-.admin-link {
-    color: #e74c3c;
-    font-weight: 600;
-    font-size: 14px;
-}
-
-.admin-link:hover {
-    color: #c0392b;
 }

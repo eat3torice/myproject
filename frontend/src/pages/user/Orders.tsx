@@ -112,7 +112,7 @@ export default function Orders() {
                                     <div className="info-group">
                                         <span className="label">Total Amount</span>
                                         <span className="value amount">
-                                            ${Number(order.Total_Amount).toFixed(2)}
+                                            {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(Number(order.Total_Amount))}
                                         </span>
                                     </div>
 

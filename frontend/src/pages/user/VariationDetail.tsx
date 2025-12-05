@@ -194,7 +194,7 @@ export default function VariationDetail() {
                             <div className="sku-tag">SKU: {variation.SKU}</div>
 
                             <div className="price-row">
-                                <span className="current-price">${Number(variation.Price).toFixed(2)}</span>
+                                <span className="current-price">{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(Number(variation.Price))}</span>
                                 {variation.Quantity > 0 ? (
                                     <span className="stock-badge in-stock">In Stock</span>
                                 ) : (

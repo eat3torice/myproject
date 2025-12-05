@@ -114,7 +114,7 @@ export default function OrderDetail() {
                             </div>
                             <div className="detail-item">
                                 <label>Total Amount</label>
-                                <div className="detail-amount">${Number(order.Total_Amount).toFixed(2)}</div>
+                                <div className="detail-amount">{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(Number(order.Total_Amount))}</div>
                             </div>
                         </div>
 
@@ -201,9 +201,9 @@ export default function OrderDetail() {
                                                         <div style={{ fontWeight: 600 }}>{line.VariationName || `Variation #${line.VariationID}`}</div>
                                                         <div style={{ fontSize: '12px', color: '#9ca3af' }}>ID: {line.PK_OrderLine}</div>
                                                     </td>
-                                                    <td className="text-right">${Number(line.Unit_Price).toFixed(2)}</td>
+                                                    <td className="text-right">{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(Number(line.Unit_Price))}</td>
                                                     <td className="text-right">x{line.Quantity}</td>
-                                                    <td className="text-right" style={{ fontWeight: 600 }}>${Number(line.Price).toFixed(2)}</td>
+                                                    <td className="text-right" style={{ fontWeight: 600 }}>{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(Number(line.Price))}</td>
                                                     <td>
                                                         <span style={{ fontSize: '12px', color: '#6b7280', background: '#f3f4f6', padding: '2px 8px', borderRadius: '4px' }}>
                                                             {line.Status}

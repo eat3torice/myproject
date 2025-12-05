@@ -236,7 +236,7 @@ export default function Cart() {
                                             </div>
                                             <div className="product-details">
                                                 <h3 className="product-name">{item.variation_name || 'Product Item'}</h3>
-                                                <p className="unit-price">${Number(item.Price).toFixed(2)}</p>
+                                                <p className="unit-price">{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(Number(item.Price))}</p>
                                             </div>
                                         </div>
 
@@ -256,7 +256,7 @@ export default function Cart() {
                                         </div>
 
                                         <div className="total-cell">
-                                            ${(Number(item.Price) * item.Quantity).toFixed(2)}
+                                            {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(Number(item.Price) * item.Quantity)}
                                         </div>
                                     </div>
                                 ))}
@@ -305,7 +305,7 @@ export default function Cart() {
 
                                 <div className="summary-row">
                                     <span>Subtotal</span>
-                                    <span>${calculateTotal().toFixed(2)}</span>
+                                    <span>{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(calculateTotal())}</span>
                                 </div>
                                 <div className="summary-row">
                                     <span>Shipping</span>
@@ -314,7 +314,7 @@ export default function Cart() {
                                 <div className="summary-divider"></div>
                                 <div className="summary-row total-row">
                                     <span>Total</span>
-                                    <span>${calculateTotal().toFixed(2)}</span>
+                                    <span>{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(calculateTotal())}</span>
                                 </div>
 
                                 <button

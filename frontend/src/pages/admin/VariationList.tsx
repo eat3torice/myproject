@@ -291,7 +291,7 @@ export default function VariationList() {
                                     </td>
                                     <td>{variation.SKU}</td>
                                     <td>{variation.Name}</td>
-                                    <td>${variation.Price}</td>
+                                    <td>{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(Number(variation.Price))}</td>
                                     <td>{variation.Quantity}</td>
                                     <td>{variation.Color || 'N/A'}</td>
                                     <td>{variation.Size || 'N/A'}</td>
