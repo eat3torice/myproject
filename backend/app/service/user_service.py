@@ -95,3 +95,26 @@ class UserService:
         account.Password = pwd_hasher.hash(new_password)
         self.db.commit()
         return True
+
+    def verify_user_identity(self, username: str, phone: str):
+        """Xác thực danh tính user qua username và phone"""
+        account = self.db.query(Account).filter(Account.Username == username).first()
+        if not account:
+            return None
+
+        customer = self.db.query(Customer).filter(Customer.AccountID == account.PK_Account).first()
+        if not customer or customer.Phone != phone:
+            return None
+
+        return account
+
+    def reset_password(self, username: str, phone: str, new_password: str):
+        """Reset mật khẩu sau khi xác thực danh tính"""
+        account = self.verify_user_identity(username, phone)
+        if not account:
+            raise ValueError("User not found or phone number doesn't match")
+
+        # Update password
+        account.Password = pwd_hasher.hash(new_password)
+        self.db.commit()
+        return True

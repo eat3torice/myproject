@@ -3,13 +3,12 @@
 Script to create sample variations for testing
 """
 
-from datetime import datetime
 
 from sqlalchemy.orm import sessionmaker
 
 from app.database.session import engine
-from app.model.variation_model import Variation
 from app.model.product_model import Product
+from app.model.variation_model import Variation
 
 
 def create_sample_variations():
@@ -20,7 +19,7 @@ def create_sample_variations():
     try:
         # Get some products to add variations to
         products = session.query(Product).limit(5).all()
-        
+
         if not products:
             print("⚠️ No products found. Please run populate_sample_data.py first!")
             return
@@ -35,12 +34,12 @@ def create_sample_variations():
             {"size": "M", "color": "Red", "stock": 75, "price_adjustment": 0},
             {"size": "L", "color": "Red", "stock": 60, "price_adjustment": 5000},
             {"size": "XL", "color": "Red", "stock": 40, "price_adjustment": 10000},
-            
+
             # Color variations
             {"size": "M", "color": "Blue", "stock": 80, "price_adjustment": 0},
             {"size": "M", "color": "Black", "stock": 90, "price_adjustment": 0},
             {"size": "M", "color": "White", "stock": 70, "price_adjustment": 0},
-            
+
             # Mixed variations
             {"size": "L", "color": "Blue", "stock": 55, "price_adjustment": 5000},
             {"size": "L", "color": "Black", "stock": 65, "price_adjustment": 5000},
@@ -49,12 +48,12 @@ def create_sample_variations():
 
         for product in products:
             print(f"\n📦 Adding variations for product: {product.Name}")
-            
+
             # Add 3-5 variations per product
             import random
             num_variations = random.randint(3, 5)
             selected_variations = random.sample(variations_data, num_variations)
-            
+
             for var_data in selected_variations:
                 # Check if variation already exists
                 existing = session.query(Variation).filter(
@@ -62,7 +61,7 @@ def create_sample_variations():
                     Variation.Size == var_data["size"],
                     Variation.Color == var_data["color"]
                 ).first()
-                
+
                 if existing:
                     print(f"  ⚠️ Variation {var_data['size']}/{var_data['color']} already exists")
                     continue

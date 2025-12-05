@@ -43,3 +43,14 @@ class UpdateProfile(BaseModel):
 class ChangePassword(BaseModel):
     old_password: str
     new_password: str
+
+
+class ForgotPasswordRequest(BaseModel):
+    username: str
+    phone: str
+
+
+class ResetPassword(BaseModel):
+    username: str
+    phone: str
+    new_password: str

@@ -3,7 +3,14 @@ from sqlalchemy.orm import Session
 
 from app.auth.dependencies import get_current_account
 from app.database.session import get_db
-from app.schema.user_schema import ChangePassword, UpdateProfile, UserProfile, UserRegister
+from app.schema.user_schema import (
+    ChangePassword,
+    ForgotPasswordRequest,
+    ResetPassword,
+    UpdateProfile,
+    UserProfile,
+    UserRegister,
+)
 from app.service.user_service import UserService
 
 router = APIRouter(prefix="/user", tags=["User"])
@@ -60,5 +67,27 @@ def change_password(
             return {"message": "Password changed successfully"}
         else:
             raise HTTPException(status_code=404, detail="Account not found")
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/verify-identity")
+def verify_identity(request: ForgotPasswordRequest, db: Session = Depends(get_db)):
+    """Xác thực danh tính user để reset password"""
+    service = UserService(db)
+    account = service.verify_user_identity(request.username, request.phone)
+    if not account:
+        raise HTTPException(status_code=404, detail="User not found or phone number doesn't match")
+    return {"message": "Identity verified", "username": request.username}
+
+
+@router.post("/reset-password")
+def reset_password(reset_data: ResetPassword, db: Session = Depends(get_db)):
+    """Reset mật khẩu sau khi xác thực danh tính"""
+    service = UserService(db)
+    try:
+        success = service.reset_password(reset_data.username, reset_data.phone, reset_data.new_password)
+        if success:
+            return {"message": "Password reset successfully"}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
