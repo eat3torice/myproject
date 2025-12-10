@@ -29,9 +29,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 function UserProtectedRoute({ children }: { children: React.ReactNode }) {
-  const token = localStorage.getItem('token');
-  if (!token) {
-    alert('Please login to access this page');
+  if (!authService.isAuthenticated()) {
     return <Navigate to="/login" replace />;
   }
   return <>{children}</>;

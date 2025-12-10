@@ -1,11 +1,15 @@
 from typing import Optional
 
 from sqlalchemy.orm import Session
+import logging
 
 from app.model.brand_model import Brand
 from app.model.category_model import Category
 from app.model.product_model import Product
 from app.model.variation_model import Variation
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 
 class PublicProductService:
@@ -37,6 +41,11 @@ class PublicProductService:
             query = query.filter((Variation.Name.ilike(f"%{search}%")) | (Product.Name.ilike(f"%{search}%")))
 
         variations = query.offset(skip).limit(limit).all()
+
+        # Log
+        logger.info(f"🛍️  {len(variations)} variations (public)")
+        for idx, v in enumerate(variations, 1):
+            logger.info(f"[{idx}] ID:{v.PK_Variation} {v.Name} - {v.Price:,.0f}đ - Stock:{v.Quantity}")
 
         # Populate CategoryID from Product
         for variation in variations:

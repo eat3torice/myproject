@@ -5,6 +5,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { variationService } from '../../services/variationService';
 import { imagesService } from '../../services/imagesService';
 import { cartService } from '../../services/cartService'; // Import cartService
+import { authService } from '../../services/authService';
 import { API_BASE_URL } from '../../config/api';
 import type { Variation } from '../../types';
 import './VariationDetail.css';
@@ -46,7 +47,7 @@ export default function VariationDetail() {
 
     const loadCartCount = async () => {
         try {
-            if (localStorage.getItem('token')) {
+            if (authService.isAuthenticated()) {
                 const items = await cartService.getCart();
                 setCartCount(items.length);
             }
@@ -76,7 +77,7 @@ export default function VariationDetail() {
     };
 
     const handleAddToCart = async () => {
-        const token = localStorage.getItem('token');
+        const token = authService.getToken();
         if (!token) {
             navigate('/login');
             return;

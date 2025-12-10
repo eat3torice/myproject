@@ -16,7 +16,10 @@ export default function Login() {
         setLoading(true);
 
         try {
-            const response = await authService.login({ username, password });
+            const response = await authService.login({
+                username: username.trim(),
+                password: password.trim()
+            });
 
             // Check if user is admin or employee, prevent access to user area
             if (response.role_id === 1 || response.role_id === 18) {

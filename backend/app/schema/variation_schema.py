@@ -18,7 +18,8 @@ class VariationCreate(BaseModel):
 
     class Config:
         from_attributes = True
-
+    
+    
 
 class VariationUpdate(BaseModel):
     SKU: Optional[str] = None

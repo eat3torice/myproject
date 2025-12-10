@@ -8,6 +8,7 @@ from sqlalchemy.orm import sessionmaker
 from app.auth.auth_service import AuthService
 from app.database.session import engine
 from app.model.account_model import Account
+from app.model.role_model import Role
 
 
 def create_sample_accounts():
@@ -27,14 +28,14 @@ def create_sample_accounts():
             {"username": "abc123", "password": "abc123", "role_id": 1, "phone": "0123456789"},
 
             # Employee accounts
-            {"username": "employee1", "password": "emp123", "role_id": 2, "phone": "0123456789"},
-            {"username": "employee2", "password": "emp456", "role_id": 2, "phone": "0123456789"},
-            {"username": "staff1", "password": "staff123", "role_id": 2, "phone": "0123456789"},
+            {"username": "employee1", "password": "emp123", "role_id": 18, "phone": "0123456789"},
+            {"username": "employee2", "password": "emp456", "role_id": 18, "phone": "0123456789"},
+            {"username": "staff1", "password": "staff123", "role_id": 18, "phone": "0123456789"},
 
             # Customer accounts
-            {"username": "customer1", "password": "cust123", "role_id": 3, "phone": "0123456789"},
-            {"username": "customer2", "password": "cust456", "role_id": 3, "phone": "0123456789"},
-            {"username": "user1", "password": "user123", "role_id": 3, "phone": "0123456789"},
+            {"username": "customer1", "password": "cust123", "role_id": 2, "phone": "0123456789"},
+            {"username": "customer2", "password": "cust456", "role_id": 2, "phone": "0123456789"},
+            {"username": "user1", "password": "user123", "role_id": 2, "phone": "0123456789"},
         ]
 
         print("Creating sample accounts...")
@@ -76,9 +77,9 @@ def create_sample_accounts():
 
         # Show summary
         print("\n📊 Account Summary:")
-        for role_name, role_id in [("ADMIN", 1), ("EMPLOYEE", 2), ("CUSTOMER", 3)]:
-            count = session.query(Account).filter(Account.RoleID == role_id).count()
-            print(f"  {role_name}: {count} accounts")
+        for role in session.query(Role).all():
+            count = session.query(Account).filter(Account.RoleID == role.PK_Role).count()
+            print(f"  {role.Name}: {count} accounts")
 
         # Show all accounts
         print("\n📋 All Sample Accounts:")
@@ -86,7 +87,8 @@ def create_sample_accounts():
             .filter(Account.Username.in_([acc["username"] for acc in sample_accounts])) \
             .all()
         for account in accounts:
-            role_name = {1: "ADMIN", 2: "EMPLOYEE", 3: "CUSTOMER"}.get(account.RoleID, "UNKNOWN")
+            role = session.query(Role).filter(Role.PK_Role == account.RoleID).first()
+            role_name = role.Name if role else "UNKNOWN"
             print(
                 f"  {account.Username}: {role_name} "
                 f"(RoleID: {account.RoleID})"

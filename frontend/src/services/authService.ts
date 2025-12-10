@@ -1,6 +1,15 @@
 import api from '../config/api';
 import type { LoginRequest, LoginResponse } from '../types';
 
+// Determine token key based on current path
+const getTokenKey = (): string => {
+    const path = window.location.pathname;
+    if (path.startsWith('/admin')) {
+        return 'admin_token';
+    }
+    return 'user_token';
+};
+
 export const authService = {
     login: async (credentials: LoginRequest): Promise<LoginResponse> => {
         const response = await api.post('/auth/login', credentials);
@@ -8,19 +17,23 @@ export const authService = {
     },
 
     logout: () => {
-        localStorage.removeItem('token');
-        window.location.href = '/login';
+        const tokenKey = getTokenKey();
+        localStorage.removeItem(tokenKey);
+        window.location.href = tokenKey === 'admin_token' ? '/admin/login' : '/login';
     },
 
     isAuthenticated: (): boolean => {
-        return !!localStorage.getItem('token');
+        const tokenKey = getTokenKey();
+        return !!localStorage.getItem(tokenKey);
     },
 
     getToken: (): string | null => {
-        return localStorage.getItem('token');
+        const tokenKey = getTokenKey();
+        return localStorage.getItem(tokenKey);
     },
 
     setToken: (token: string) => {
-        localStorage.setItem('token', token);
+        const tokenKey = getTokenKey();
+        localStorage.setItem(tokenKey, token);
     },
 };

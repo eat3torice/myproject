@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import logging
 
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
@@ -10,6 +11,7 @@ from app.model.account_model import Account
 from app.schema.account_schema import AccountCreate
 
 ph = PasswordHasher()
+logger = logging.getLogger(__name__)
 
 
 class AuthService:
@@ -23,8 +25,12 @@ class AuthService:
     @staticmethod
     def verify_password(plain_password: str, hashed_password: str) -> bool:
         try:
-            return ph.verify(hashed_password, plain_password)  # đúng thứ tự
+            logger.debug(f"Verifying password: plain='{plain_password}' (len={len(plain_password)})")
+            ph.verify(hashed_password, plain_password)
+            logger.debug("Password verification SUCCESS")
+            return True
         except VerifyMismatchError:
+            logger.debug("Password verification FAILED")
             return False
 
     def create_access_token(self, data: dict, expires_delta: timedelta | None = None) -> str:
@@ -54,7 +60,14 @@ class AuthService:
         return db_account
 
     def authenticate_account(self, username: str, password: str) -> Account | None:
+        logger.debug(f"Authenticating username='{username}', password='{password}' (len={len(password)})")
         account = self.db.query(Account).filter(Account.Username == username).first()
-        if account and self.verify_password(password, account.Password):
-            return account
+        if account:
+            logger.debug(f"Account found: {account.Username}, RoleID={account.RoleID}")
+            is_valid = self.verify_password(password, account.Password)
+            logger.debug(f"Password validation result: {is_valid}")
+            if is_valid:
+                return account
+        else:
+            logger.debug(f"Account not found for username: {username}")
         return None

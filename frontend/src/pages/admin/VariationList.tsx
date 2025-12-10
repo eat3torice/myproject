@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { variationService } from '../../services/variationService';
 import { productService } from '../../services/productService';
 import { imagesService } from '../../services/imagesService';
-import { API_BASE_URL } from '../../config/api';
+import api, { API_BASE_URL } from '../../config/api';
 import type { Variation, Product } from '../../types';
 import './Common.css';
 
@@ -22,7 +22,7 @@ export default function VariationList() {
     const [editingVariation, setEditingVariation] = useState<Variation | null>(null);
     const [showUploadModal, setShowUploadModal] = useState(false);
     const [uploadingVariation, setUploadingVariation] = useState<Variation | null>(null);
-    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [imageUrl, setImageUrl] = useState('');
     const [setDefault, setSetDefault] = useState(false);
     const [productImages, setProductImages] = useState<{ [key: number]: Image[] }>({});
     const [formData, setFormData] = useState({
@@ -118,46 +118,46 @@ export default function VariationList() {
     };
 
     const handleUploadImage = (variation: Variation) => {
+        // Kiểm tra số lượng ảnh hiện tại
+        const currentImages = productImages[variation.PK_Variation] || [];
+        if (currentImages.length >= 3) {
+            alert('Maximum 3 images per variation');
+            return;
+        }
+
         setUploadingVariation(variation);
-        setSelectedFile(null);
+        setImageUrl('');
         setSetDefault(false);
         setShowUploadModal(true);
     };
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            setSelectedFile(e.target.files[0]);
-        }
-    };
-
     const handleUploadSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!selectedFile || !uploadingVariation) return;
-
-        const formDataUpload = new FormData();
-        formDataUpload.append('file', selectedFile);
+        if (!imageUrl || !uploadingVariation) {
+            alert('Please enter image URL');
+            return;
+        }
 
         try {
-            // Note: This assumes variation_router has upload endpoint
-            // You may need to adjust the API call based on your backend
-            const response = await fetch(`${API_BASE_URL}/admin/variations/${uploadingVariation.PK_Variation}/upload-image`, {
-                method: 'POST',
-                body: formDataUpload,
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                },
+            const response = await api.post(`/admin/variations/${uploadingVariation.PK_Variation}/add-image-url`, null, {
+                params: {
+                    image_url: imageUrl,
+                    set_default: setDefault
+                }
             });
 
-            if (response.ok) {
-                alert('Image uploaded successfully');
+            if (response.status === 200) {
+                alert('Image added successfully');
                 setShowUploadModal(false);
+                setImageUrl('');
                 loadData(); // Reload to show updated images
             } else {
-                alert('Failed to upload image');
+                alert('Failed to add image');
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Upload error:', error);
-            alert('Failed to upload image');
+            const errorMsg = error.response?.data?.detail || 'Failed to add image';
+            alert(errorMsg);
         }
     };
 
@@ -301,8 +301,13 @@ export default function VariationList() {
                                             <button onClick={() => handleEdit(variation)} className="btn-edit">
                                                 Edit
                                             </button>
-                                            <button onClick={() => handleUploadImage(variation)} className="btn-secondary">
-                                                Upload Image
+                                            <button
+                                                onClick={() => handleUploadImage(variation)}
+                                                className="btn-secondary"
+                                                disabled={(productImages[variation.PK_Variation] || []).length >= 3}
+                                                title={(productImages[variation.PK_Variation] || []).length >= 3 ? "Maximum 3 images" : "Add Image URL"}
+                                            >
+                                                Add Image ({(productImages[variation.PK_Variation] || []).length}/3)
                                             </button>
                                             <button
                                                 onClick={() => handleDelete(variation.PK_Variation)}
@@ -444,16 +449,20 @@ export default function VariationList() {
             {showUploadModal && uploadingVariation && (
                 <div className="modal-overlay" onClick={() => setShowUploadModal(false)}>
                     <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                        <h2>Upload Image for {uploadingVariation.Name}</h2>
+                        <h2>Add Image URL for {uploadingVariation.Name}</h2>
                         <form onSubmit={handleUploadSubmit}>
                             <div className="form-group">
-                                <label>Image File *</label>
+                                <label>Image URL *</label>
                                 <input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={handleFileChange}
+                                    type="url"
+                                    value={imageUrl}
+                                    onChange={(e) => setImageUrl(e.target.value)}
+                                    placeholder="https://cdn.jsdelivr.net/gh/..."
                                     required
                                 />
+                                <small style={{ color: '#666', marginTop: '5px', display: 'block' }}>
+                                    Example: https://cdn.jsdelivr.net/gh/eat4torice/my_image@hash/image.png
+                                </small>
                             </div>
                             <div className="form-group">
                                 <label>
@@ -467,7 +476,7 @@ export default function VariationList() {
                             </div>
                             <div className="modal-actions">
                                 <button type="submit" className="btn-primary">
-                                    Upload
+                                    Add Image
                                 </button>
                                 <button
                                     type="button"

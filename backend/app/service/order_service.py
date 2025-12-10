@@ -49,7 +49,7 @@ class OrderService:
             if address:
                 province = self.db.query(Province).filter(Province.PK_Province == address.ProvinceID).first()
                 district = self.db.query(District).filter(District.PK_District == address.DistrictID).first()
-                ward = self.db.query(Ward).filter(Ward.PK_Ward == address.WardID).first()
+                ward = self.db.query(Ward).filter(Ward.PK_Ward == address.WardID).first() 
 
                 address_parts = []
                 if address.StreetAddress:

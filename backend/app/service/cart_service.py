@@ -12,7 +12,10 @@ class CartService:
 
     def get_cart_items(self, customer_id: int):
         """Lấy tất cả items trong giỏ hàng của customer"""
-        return self.db.query(CartItem).filter(CartItem.Customer_id == customer_id, CartItem.Status == "active").all()
+        carts = self.db.query(CartItem).filter(CartItem.Customer_id == customer_id, CartItem.Status == "active").all()
+        for idx, c in enumerate(carts,1):
+            print(f"[{idx}] ID:{c.PK_CartItem} Qty:{c.Quantity}")
+        return carts
 
     def add_to_cart(self, customer_id: int, item_data: CartItemAdd):
         """Thêm sản phẩm vào giỏ hàng"""

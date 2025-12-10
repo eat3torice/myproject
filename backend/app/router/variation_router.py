@@ -78,6 +78,33 @@ def update_variation_quantity(variation_id: int, quantity_change: int, db: Sessi
     return updated
 
 
+@router.post("/{variation_id}/add-image-url", response_model=dict)
+def add_variation_image_url(
+    variation_id: int,
+    image_url: str,
+    set_default: bool = False,
+    db: Session = Depends(get_db),
+):
+    """Thêm URL ảnh cho variation (từ CDN hoặc external source) - tối đa 3 ảnh"""
+    service = VariationService(db)
+    variation = service.get_variation_by_id(variation_id)
+    if not variation:
+        raise HTTPException(status_code=404, detail="Variation not found")
+
+    # Kiểm tra số lượng ảnh hiện tại
+    existing_images = db.query(Images).filter(Images.VariationID == variation_id).count()
+    if existing_images >= 3:
+        raise HTTPException(status_code=400, detail="Maximum 3 images per variation")
+
+    # Lưu URL trực tiếp vào database
+    new_image = Images(VariationID=variation_id, Id_Image=image_url, Set_Default=set_default)
+    db.add(new_image)
+    db.commit()
+    db.refresh(new_image)
+
+    return {"image_url": image_url, "image_id": new_image.PK_Images}
+
+
 UPLOAD_DIR = Path("static/images")
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -89,7 +116,7 @@ def upload_variation_image(
     set_default: bool = False,
     db: Session = Depends(get_db),
 ):
-    """Upload ảnh cho variation và lưu vào bảng images"""
+    """Upload ảnh cho variation và lưu vào bảng images (local storage - deprecated, dùng add-image-url thay thế)"""
     service = VariationService(db)
     variation = service.get_variation_by_id(variation_id)
     if not variation:

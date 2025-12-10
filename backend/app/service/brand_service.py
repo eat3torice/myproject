@@ -4,7 +4,10 @@ from sqlalchemy.orm import Session
 
 from app.model.brand_model import Brand
 from app.schema.brand_schema import BrandCreate, BrandUpdate
+import logging
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 class BrandService:
     def __init__(self, db: Session):
@@ -18,8 +21,11 @@ class BrandService:
             query = query.filter(Brand.Name.ilike(f"%{name}%"))
         if status:
             query = query.filter(Brand.Status == status)
-
-        return query.offset(skip).limit(limit).all()
+        brands = query.offset(skip).limit(limit).all()
+        logger.info(f"Fetching brands with filters - Name:")
+        for idx, b in enumerate(brands,1):
+            logger.info(f"[{idx}] ID:{b.PK_Brand} {b.Name} - Status:{b.Status}")
+        return brands 
 
     def get_brand_by_id(self, brand_id: int):
         return self.db.query(Brand).filter(Brand.PK_Brand == brand_id).first()

@@ -6,6 +6,7 @@ import { publicProductService } from '../../services/publicProductService';
 import { categoryService } from '../../services/categoryService';
 import { cartService } from '../../services/cartService';
 import { imagesService } from '../../services/imagesService';
+import { authService } from '../../services/authService';
 import { API_BASE_URL } from '../../config/api';
 import './Shop.css';
 
@@ -80,7 +81,7 @@ export default function Shop() {
     useEffect(() => {
         loadProducts();
         loadCategories();
-        if (localStorage.getItem('token')) {
+        if (authService.isAuthenticated()) {
             loadCart();
         }
     }, []);
@@ -169,7 +170,7 @@ export default function Shop() {
 
     const handleAddToCart = async (variationId: number, e: React.MouseEvent) => {
         e.stopPropagation(); // Ngăn chặn chuyển trang khi bấm nút Add
-        const token = localStorage.getItem('token');
+        const token = authService.getToken();
         if (!token) {
             navigate('/login');
             return;
@@ -237,8 +238,8 @@ export default function Shop() {
                                 <CartIcon />
                                 {cartVariations.length > 0 && <span className="cart-badge">{cartVariations.length}</span>}
                             </Link>
-                            {localStorage.getItem('token') ? (
-                                <button onClick={() => { localStorage.removeItem('token'); navigate('/login'); }} className="btn-logout">
+                            {authService.isAuthenticated() ? (
+                                <button onClick={() => { authService.logout(); }} className="btn-logout">
                                     Logout
                                 </button>
                             ) : (

@@ -5,6 +5,15 @@ const baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replac
 
 export const API_BASE_URL = baseUrl;
 
+// Determine token key based on current path
+const getTokenKey = (): string => {
+    const path = window.location.pathname;
+    if (path.startsWith('/admin')) {
+        return 'admin_token';
+    }
+    return 'user_token';
+};
+
 export const api = axios.create({
     baseURL: API_BASE_URL,
     headers: {
@@ -14,7 +23,8 @@ export const api = axios.create({
 
 // Add token to requests
 api.interceptors.request.use((config) => {
-    const token = localStorage.getItem('token');
+    const tokenKey = getTokenKey();
+    const token = localStorage.getItem(tokenKey);
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
@@ -26,8 +36,9 @@ api.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response?.status === 401 && !error.config.url.includes('/auth/login')) {
-            localStorage.removeItem('token');
-            window.location.href = '/login';
+            const tokenKey = getTokenKey();
+            localStorage.removeItem(tokenKey);
+            window.location.href = tokenKey === 'admin_token' ? '/admin/login' : '/login';
         }
         return Promise.reject(error);
     }

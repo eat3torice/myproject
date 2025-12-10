@@ -2,6 +2,10 @@ from sqlalchemy.orm import Session
 
 from app.model.variation_model import Variation
 from app.schema.variation_schema import VariationCreate, VariationUpdate
+import logging
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 
 class VariationService:
@@ -11,8 +15,14 @@ class VariationService:
     def get_variations(self, skip: int = 0, limit: int = 100, product_id: int = None):
         query = self.db.query(Variation)
         if product_id:
-            query = query.filter(Variation.ProductID == product_id)
-        return query.offset(skip).limit(limit).all()
+            query = query.filter(Variation.ProductID == product_id) 
+        result =  query.offset(skip).limit(limit).all()
+        
+        logger.info(f"📦 {len(result)} variations")
+        for idx, v in enumerate(result, 1):
+            logger.info(f"[{idx}] ID:{v.PK_Variation} {v.Name} - {v.Price:,.0f}đ - Stock:{v.Quantity}")
+        
+        return result
 
     def get_variation_by_id(self, variation_id: int):
         return self.db.query(Variation).filter(Variation.PK_Variation == variation_id).first()

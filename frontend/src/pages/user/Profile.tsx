@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { userService } from '../../services/userService';
 import { cartService } from '../../services/cartService';
+import { authService } from '../../services/authService';
 import './Profile.css';
 
 // Reused Icons
@@ -126,8 +127,7 @@ export default function Profile() {
                                         </button>
 
                                         <button className="btn-secondary-full" onClick={() => {
-                                            localStorage.removeItem('token');
-                                            navigate('/login');
+                                            authService.logout();
                                         }}>
                                             Sign Out
                                         </button>
