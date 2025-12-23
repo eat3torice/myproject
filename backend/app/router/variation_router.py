@@ -5,7 +5,9 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from sqlalchemy.orm import Session
 
+from app.auth.dependencies import get_current_admin_account
 from app.database.session import get_db
+from app.model.account_model import Account
 from app.model.images_model import Images
 from app.schema.variation_schema import VariationCreate, VariationResponse, VariationUpdate
 from app.service.variation_service import VariationService
@@ -19,6 +21,7 @@ def list_variations(
     limit: int = Query(100, le=1000),
     product_id: Optional[int] = None,
     db: Session = Depends(get_db),
+    current_admin: Account = Depends(get_current_admin_account)
 ):
     """Lấy danh sách tất cả biến thể sản phẩm"""
     service = VariationService(db)
@@ -26,7 +29,7 @@ def list_variations(
 
 
 @router.get("/{variation_id}", response_model=VariationResponse)
-def get_variation(variation_id: int, db: Session = Depends(get_db)):
+def get_variation(variation_id: int, db: Session = Depends(get_db), current_admin: Account = Depends(get_current_admin_account)):
     """Lấy chi tiết một biến thể"""
     service = VariationService(db)
     variation = service.get_variation_by_id(variation_id)
@@ -36,7 +39,7 @@ def get_variation(variation_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/", response_model=VariationResponse)
-def create_variation(variation: VariationCreate, db: Session = Depends(get_db)):
+def create_variation(variation: VariationCreate, db: Session = Depends(get_db), current_admin: Account = Depends(get_current_admin_account)):
     """Tạo biến thể mới"""
     service = VariationService(db)
     try:
@@ -46,7 +49,7 @@ def create_variation(variation: VariationCreate, db: Session = Depends(get_db)):
 
 
 @router.put("/{variation_id}", response_model=VariationResponse)
-def update_variation(variation_id: int, variation: VariationUpdate, db: Session = Depends(get_db)):
+def update_variation(variation_id: int, variation: VariationUpdate, db: Session = Depends(get_db), current_admin: Account = Depends(get_current_admin_account)):
     """Cập nhật biến thể"""
     service = VariationService(db)
     try:
@@ -59,7 +62,7 @@ def update_variation(variation_id: int, variation: VariationUpdate, db: Session 
 
 
 @router.delete("/{variation_id}")
-def delete_variation(variation_id: int, db: Session = Depends(get_db)):
+def delete_variation(variation_id: int, db: Session = Depends(get_db), current_admin: Account = Depends(get_current_admin_account)):
     """Xóa biến thể"""
     service = VariationService(db)
     deleted = service.delete_variation(variation_id)
@@ -69,7 +72,7 @@ def delete_variation(variation_id: int, db: Session = Depends(get_db)):
 
 
 @router.patch("/{variation_id}/quantity")
-def update_variation_quantity(variation_id: int, quantity_change: int, db: Session = Depends(get_db)):
+def update_variation_quantity(variation_id: int, quantity_change: int, db: Session = Depends(get_db), current_admin: Account = Depends(get_current_admin_account)):
     """Cập nhật số lượng biến thể (+ để nhập kho, - để xuất kho)"""
     service = VariationService(db)
     updated = service.update_quantity(variation_id, quantity_change)
@@ -84,6 +87,7 @@ def add_variation_image_url(
     image_url: str,
     set_default: bool = False,
     db: Session = Depends(get_db),
+    current_admin: Account = Depends(get_current_admin_account)
 ):
     """Thêm URL ảnh cho variation (từ CDN hoặc external source) - tối đa 3 ảnh"""
     service = VariationService(db)
@@ -115,6 +119,7 @@ def upload_variation_image(
     file: UploadFile = File(...),
     set_default: bool = False,
     db: Session = Depends(get_db),
+    current_admin: Account = Depends(get_current_admin_account)
 ):
     """Upload ảnh cho variation và lưu vào bảng images (local storage - deprecated, dùng add-image-url thay thế)"""
     service = VariationService(db)

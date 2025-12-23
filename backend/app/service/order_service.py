@@ -8,6 +8,7 @@ from app.model.orderline_model import OrderLine
 from app.model.posorder_model import POSOrder
 from app.model.variation_model import Variation
 from app.schema.order_schema import OrderCreate, OrderUpdate
+import logging
 
 
 class OrderService:
@@ -33,8 +34,11 @@ class OrderService:
             query = query.filter(POSOrder.Order_Date >= start_date)
         if end_date:
             query = query.filter(POSOrder.Order_Date <= end_date)
-
-        return query.order_by(POSOrder.Creation_date.desc()).offset(skip).limit(limit).all()
+        orders_data =  query.order_by(POSOrder.Creation_date.desc()).offset(skip).limit(limit).all()
+        logging.info(f"Fetching orders with filters - Status:{status}, CustomerID:{customer_id}, DateRange:{start_date} to {end_date}")
+        for idx, o in enumerate(orders_data,1):
+            logging.info(f"[{idx}] ID:{o.PK_POSOrder} CustomerID:{o.CustomerID} Status:{o.Status} Total:{o.Total_Amount:,.0f}đ")
+        return orders_data
 
     def get_order_by_id(self, order_id: int):
         order = self.db.query(POSOrder).filter(POSOrder.PK_POSOrder == order_id).first()

@@ -13,12 +13,41 @@ export default function Login() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
+
+        // Trim inputs
+        const trimmedUsername = username.trim();
+        const trimmedPassword = password.trim();
+
+        // Validate username
+        if (!trimmedUsername) {
+            setError('Username is required.');
+            return;
+        }
+        if (trimmedUsername.length < 6) {
+            setError('Username must be at least 6 characters.');
+            return;
+        }
+        if (trimmedUsername.length > 50) {
+            setError('Username must not exceed 50 characters.');
+            return;
+        }
+
+        // Validate password
+        if (!trimmedPassword) {
+            setError('Password is required.');
+            return;
+        }
+        if (trimmedPassword.length < 6) {
+            setError('Password must be at least 6 characters.');
+            return;
+        }
+
         setLoading(true);
 
         try {
             const response = await authService.login({
-                username: username.trim(),
-                password: password.trim()
+                username: trimmedUsername,
+                password: trimmedPassword
             });
 
             // Check if user is admin or employee, prevent access to user area
@@ -49,6 +78,8 @@ export default function Login() {
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
                             required
+                            minLength={6}
+                            maxLength={50}
                             autoFocus
                         />
                     </div>
@@ -59,6 +90,7 @@ export default function Login() {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
+                            minLength={6}
                         />
                     </div>
                     {error && <div className="error-message">{error}</div>}

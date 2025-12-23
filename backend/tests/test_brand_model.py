@@ -29,3 +29,20 @@ def test_create_brand(session):
     assert result.Name == "BrandX"
     assert result.Status == "ACTIVE"
 
+def test_update_brand(session):
+    brand = Brand(Name= "BrandC", Status= "ACTIVE")
+    session.add(brand)
+    session.commit()
+    resutl = session.query(Brand).filter(Brand.Name =="BrandC").first()
+    assert resutl is not None 
+    assert resutl.Name == "BrandC"
+    assert resutl.Status == "ACTIVE"
+
+def delete_brand(seesion):
+    brand = Brand(Name = "BrandD", Status = "INACTIVE")
+    seesion.add(brand)
+    seesion.commit()
+    result = seesion.query(Brand).filter(Brand.Name == "BrandD").first()
+    assert result is not None
+    assert result.Name == "BrandD"
+    assert result.Status == "INACTIVE"

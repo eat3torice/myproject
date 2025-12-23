@@ -59,11 +59,77 @@ export default function EmployeeList() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Trim and validate
+        const trimmedName = formData.Name.trim();
+        const trimmedPhone = formData.Phone.trim();
+        const trimmedEmail = formData.Email.trim();
+
+        // Validate Account ID
+        if (!formData.AccountID || formData.AccountID === 0) {
+            alert('Account ID is required.');
+            return;
+        }
+        if (!Number.isInteger(formData.AccountID) || formData.AccountID < 1) {
+            alert('Account ID must be a positive integer.');
+            return;
+        }
+
+        // Validate Name
+        if (!trimmedName) {
+            alert('Name is required.');
+            return;
+        }
+        if (trimmedName.length < 6) {
+            alert('Name must be at least 6 characters.');
+            return;
+        }
+        if (trimmedName.length > 100) {
+            alert('Name must not exceed 100 characters.');
+            return;
+        }
+
+        // Validate Phone if provided
+        if (trimmedPhone) {
+            if (!/^\d+$/.test(trimmedPhone)) {
+                alert('Phone number must contain only digits.');
+                return;
+            }
+            if (trimmedPhone.length < 9) {
+                alert('Phone number must be at least 9 digits.');
+                return;
+            }
+            if (trimmedPhone.length > 15) {
+                alert('Phone number must not exceed 15 digits.');
+                return;
+            }
+        }
+
+        // Validate Email if provided
+        if (trimmedEmail) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(trimmedEmail)) {
+                alert('Please enter a valid email address.');
+                return;
+            }
+            if (trimmedEmail.length > 100) {
+                alert('Email must not exceed 100 characters.');
+                return;
+            }
+        }
+
+        const dataToSubmit = {
+            AccountID: formData.AccountID,
+            Name: trimmedName,
+            Phone: trimmedPhone,
+            Email: trimmedEmail,
+        };
+
         try {
             if (editingEmployee) {
-                await employeeService.update(editingEmployee.PK_Employee, formData);
+                await employeeService.update(editingEmployee.PK_Employee, dataToSubmit);
             } else {
-                await employeeService.create(formData);
+                await employeeService.create(dataToSubmit);
             }
             setShowModal(false);
             setEditingEmployee(null);
@@ -266,14 +332,20 @@ export default function EmployeeList() {
                                     value={formData.Name}
                                     onChange={(e) => setFormData({ ...formData, Name: e.target.value })}
                                     required
+                                    minLength={6}
+                                    maxLength={100}
                                 />
                             </div>
                             <div className="form-group">
                                 <label>Phone</label>
                                 <input
-                                    type="text"
+                                    type="tel"
                                     value={formData.Phone}
                                     onChange={(e) => setFormData({ ...formData, Phone: e.target.value })}
+                                    pattern="\d{9,15}"
+                                    minLength={9}
+                                    maxLength={15}
+                                    placeholder="0123456789"
                                 />
                             </div>
                             <div className="form-group">
@@ -282,6 +354,8 @@ export default function EmployeeList() {
                                     type="email"
                                     value={formData.Email}
                                     onChange={(e) => setFormData({ ...formData, Email: e.target.value })}
+                                    maxLength={100}
+                                    placeholder="employee@example.com"
                                 />
                             </div>
                             <div className="modal-actions">

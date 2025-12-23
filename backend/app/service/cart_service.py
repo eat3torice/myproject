@@ -4,6 +4,9 @@ from app.model.cart_variation_model import CartVariation
 from app.model.cartitem_model import CartItem
 from app.model.variation_model import Variation
 from app.schema.cart_schema import CartItemAdd
+import logging
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 
 class CartService:
@@ -42,6 +45,7 @@ class CartService:
             existing_cart_item.Quantity += item_data.quantity
             self.db.commit()
             self.db.refresh(existing_cart_item)
+            logger.debug(f"Updated cart item {existing_cart_item.PK_CartItem} quantity to {existing_cart_item.Quantity} for customer {customer_id}")
             return existing_cart_item
         else:
             # Create new cart item
@@ -54,6 +58,7 @@ class CartService:
             self.db.add(cart_var)
             self.db.commit()
             self.db.refresh(cart_item)
+            logger.debug(f"Added new cart item {cart_item.PK_CartItem} quantity {cart_item.Quantity} for customer {customer_id}")
             return cart_item
 
     def update_cart_item(self, cart_item_id: int, customer_id: int, quantity: int):
@@ -65,6 +70,7 @@ class CartService:
         )
 
         if not cart_item:
+            logger.error(f"CartItem ID {cart_item_id} for Customer ID {customer_id} not found")
             return None
 
         # Lấy variation từ cart_variation
@@ -77,14 +83,17 @@ class CartService:
 
         if quantity > variation.Quantity:
             from fastapi import HTTPException
+            logger.error(f"Not enough stock for variation ID {cart_var.VariationID}. Requested: {quantity}, Available: {variation.Quantity}")
             raise HTTPException(status_code=400, detail="Not enough stock")
 
         if quantity <= 0:
+            logger.debug(f"Removing cart item {cart_item_id} for customer {customer_id} due to non-positive quantity")
             self.db.delete(cart_item)
         else:
             cart_item.Quantity = quantity
 
         self.db.commit()
+        logger.debug(f"Updated cart item {cart_item_id} to quantity {quantity} for customer {customer_id}")
         return cart_item
 
     def remove_from_cart(self, cart_item_id: int, customer_id: int):
@@ -94,16 +103,18 @@ class CartService:
             .filter(CartItem.PK_CartItem == cart_item_id, CartItem.Customer_id == customer_id)
             .first()
         )
-
+        logger.debug(f"Attempting to remove cart item {cart_item_id} for customer {customer_id}")
         if not cart_item:
             return False
 
         self.db.delete(cart_item)
         self.db.commit()
+        logger.debug(f"Removed cart item {cart_item_id} for customer {customer_id}")
         return True
 
     def clear_cart(self, customer_id: int):
         """Xóa toàn bộ giỏ hàng"""
         self.db.query(CartItem).filter(CartItem.Customer_id == customer_id).delete()
         self.db.commit()
+        logger.debug(f"Cleared cart for customer {customer_id}")
         return True

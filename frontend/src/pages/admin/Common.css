@@ -114,6 +114,29 @@ button {
     border-color: #d1d5db;
 }
 
+.btn-info {
+    background-color: #3b82f6;
+    border: 1px solid #2563eb;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-info:hover {
+    background-color: #2563eb;
+    border-color: #1d4ed8;
+}
+
+.btn-info:disabled {
+    background-color: #93c5fd;
+    border-color: #93c5fd;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
 /* 4. Table Styling */
 .table-container {
     background: var(--card-bg);

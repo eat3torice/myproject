@@ -54,11 +54,48 @@ export default function ProductList() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Trim and validate
+        const trimmedName = formData.Name.trim();
+        const trimmedImages = formData.Images.trim();
+
+        if (!trimmedName) {
+            alert('Product name is required.');
+            return;
+        }
+        if (trimmedName.length < 2) {
+            alert('Product name must be at least 2 characters.');
+            return;
+        }
+        if (trimmedName.length > 200) {
+            alert('Product name must not exceed 200 characters.');
+            return;
+        }
+        if (!formData.CategoryID || formData.CategoryID === 0) {
+            alert('Please select a category.');
+            return;
+        }
+        if (!formData.BrandID || formData.BrandID === 0) {
+            alert('Please select a brand.');
+            return;
+        }
+        if (trimmedImages && trimmedImages.length > 500) {
+            alert('Images URL must not exceed 500 characters.');
+            return;
+        }
+
+        const dataToSubmit = {
+            Name: trimmedName,
+            Images: trimmedImages,
+            CategoryID: formData.CategoryID,
+            BrandID: formData.BrandID,
+        };
+
         try {
             if (editingProduct) {
-                await productService.update(editingProduct.PK_Product, formData);
+                await productService.update(editingProduct.PK_Product, dataToSubmit);
             } else {
-                await productService.create(formData);
+                await productService.create(dataToSubmit);
             }
             setShowModal(false);
             setEditingProduct(null);
@@ -237,6 +274,8 @@ export default function ProductList() {
                                         setFormData({ ...formData, Name: e.target.value })
                                     }
                                     required
+                                    minLength={2}
+                                    maxLength={200}
                                 />
                             </div>
                             <div className="form-group">
@@ -288,6 +327,7 @@ export default function ProductList() {
                                         setFormData({ ...formData, Images: e.target.value })
                                     }
                                     placeholder="image.jpg"
+                                    maxLength={500}
                                 />
                             </div>
                             <div className="modal-actions">

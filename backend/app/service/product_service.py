@@ -4,7 +4,9 @@ from sqlalchemy.orm import Session
 
 from app.model.product_model import Product
 from app.schema.product_schema import ProductCreate
-
+import logging
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 class ProductService:
     def __init__(self, db: Session):
@@ -22,7 +24,8 @@ class ProductService:
             query = query.filter(Product.CategoryID == category_id)
         if brand_id:
             query = query.filter(Product.BrandID == brand_id)
-
+        for idx, p in enumerate(query.all(), 1):
+            logger.info(f"[{idx}] ID:{p.PK_Product} {p.Name}")
         return query.offset(skip).limit(limit).all()
 
     # ✅ Lấy chi tiết sản phẩm

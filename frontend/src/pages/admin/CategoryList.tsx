@@ -40,11 +40,33 @@ export default function CategoryList() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Trim and validate
+        const trimmedName = formData.Name.trim();
+
+        if (!trimmedName) {
+            alert('Category name is required.');
+            return;
+        }
+        if (trimmedName.length < 2) {
+            alert('Category name must be at least 2 characters.');
+            return;
+        }
+        if (trimmedName.length > 100) {
+            alert('Category name must not exceed 100 characters.');
+            return;
+        }
+
+        const dataToSubmit = {
+            Name: trimmedName,
+            Status: formData.Status
+        };
+
         try {
             if (editingCategory) {
-                await categoryService.update(editingCategory.PK_Category, formData);
+                await categoryService.update(editingCategory.PK_Category, dataToSubmit);
             } else {
-                await categoryService.create(formData);
+                await categoryService.create(dataToSubmit);
             }
             setShowModal(false);
             setEditingCategory(null);
@@ -182,6 +204,8 @@ export default function CategoryList() {
                                     value={formData.Name}
                                     onChange={(e) => setFormData({ ...formData, Name: e.target.value })}
                                     required
+                                    minLength={2}
+                                    maxLength={100}
                                 />
                             </div>
                             <div className="form-group">

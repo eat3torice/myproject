@@ -84,7 +84,11 @@ class PublicProductService:
 
     def get_categories(self):
         """Lấy danh sách danh mục"""
-        return self.db.query(Category).all()
+        cat = self.db.query(Category).all()
+        logger.info(f"📂  {len(cat)} categories (public)")
+        for idx , c in enumerate(cat, 1):
+            logger.info(f"[{idx}] ID:{c.PK_Category} {c.Name} - Status:{c.Status}")
+        return cat
 
     def get_brands(self):
         """Lấy danh sách thương hiệu"""

@@ -46,7 +46,7 @@ def login(account: AccountLogin, db: Session = Depends(get_db)):
             detail=f"Account is {db_account.Status}. Please contact administrator."
         )
 
-    access_token = auth_service.create_access_token(data={"sub": db_account.Username})
+    access_token = auth_service.create_access_token(data={"sub": db_account.Username, "role_id": db_account.RoleID})
     return {
         "access_token": access_token,
         "token_type": "bearer",

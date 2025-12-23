@@ -4,7 +4,9 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
+from app.auth.dependencies import get_current_admin_account
 from app.database.session import get_db
+from app.model.account_model import Account
 from app.schema.product_schema import ProductCreate, ProductResponse
 from app.service.product_service import ProductService
 
@@ -19,7 +21,8 @@ def list_products(
     name: Optional[str] = Query(None, description="Filter by product name (partial match)"),
     category_id: Optional[int] = Query(None, description="Filter by category ID"),
     brand_id: Optional[int] = Query(None, description="Filter by brand ID"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_admin: Account = Depends(get_current_admin_account)
 ):
     logger.info(f"GET /admin/products - skip={skip}, limit={limit}, name={name}, category_id={category_id}, brand_id={brand_id}")
     service = ProductService(db)
@@ -29,7 +32,7 @@ def list_products(
 
 
 @router.get("/{product_id}", response_model=ProductResponse)
-def get_product(product_id: int, db: Session = Depends(get_db)):
+def get_product(product_id: int, db: Session = Depends(get_db), current_admin: Account = Depends(get_current_admin_account)):
     logger.info(f"GET /admin/products/{product_id}")
     service = ProductService(db)
     product = service.get_product_by_id(product_id)
@@ -41,7 +44,7 @@ def get_product(product_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/", response_model=ProductResponse)
-def create_product(product: ProductCreate, db: Session = Depends(get_db)):
+def create_product(product: ProductCreate, db: Session = Depends(get_db), current_admin: Account = Depends(get_current_admin_account)):
     logger.info(f"POST /admin/products - Creating product: {product.name}")
     service = ProductService(db)
     created = service.create_product(product)
@@ -50,7 +53,7 @@ def create_product(product: ProductCreate, db: Session = Depends(get_db)):
 
 
 @router.put("/{product_id}", response_model=ProductResponse)
-def update_product(product_id: int, product: ProductCreate, db: Session = Depends(get_db)):
+def update_product(product_id: int, product: ProductCreate, db: Session = Depends(get_db), current_admin: Account = Depends(get_current_admin_account)):
     logger.info(f"PUT /admin/products/{product_id} - Updating product: {product.name}")
     service = ProductService(db)
     updated = service.update_product(product_id, product)
@@ -62,7 +65,7 @@ def update_product(product_id: int, product: ProductCreate, db: Session = Depend
 
 
 @router.delete("/{product_id}")
-def delete_product(product_id: int, db: Session = Depends(get_db)):
+def delete_product(product_id: int, db: Session = Depends(get_db), current_admin: Account = Depends(get_current_admin_account)):
     logger.info(f"DELETE /admin/products/{product_id}")
     service = ProductService(db)
     deleted = service.delete_product(product_id)
@@ -71,3 +74,4 @@ def delete_product(product_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Product not found")
     logger.info(f"DELETE /admin/products/{product_id} - Product deleted successfully")
     return {"message": "Product deleted successfully"}
+

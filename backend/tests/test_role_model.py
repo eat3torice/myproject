@@ -30,3 +30,11 @@ def test_create_role(session):
     assert result.Name == "Admin"
     assert isinstance(result.PK_Role, int)
 
+def test_check_role(seession):
+    role = Role(Name="Moderator")
+    session.add(role)
+    session.commit()
+    result = session.query(Role).filter(Role.Name == "Moderator").first()
+    assert result is not None
+    assert result.Name == "Moderator"
+

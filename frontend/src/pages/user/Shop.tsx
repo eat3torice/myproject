@@ -3,9 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { publicProductService } from '../../services/publicProductService';
-import { categoryService } from '../../services/categoryService';
 import { cartService } from '../../services/cartService';
-import { imagesService } from '../../services/imagesService';
 import { authService } from '../../services/authService';
 import { API_BASE_URL } from '../../config/api';
 import './Shop.css';
@@ -93,7 +91,7 @@ export default function Shop() {
     // --- Data Loading ---
     const loadCategories = async () => {
         try {
-            const data = await categoryService.getAll();
+            const data = await publicProductService.getCategories();
             setCategories(data);
         } catch (error) {
             console.error('Error loading categories:', error);
@@ -104,7 +102,7 @@ export default function Shop() {
         const imagesMap: { [key: number]: Image[] } = {};
         for (const variation of variations) {
             try {
-                const images = await imagesService.getImagesByVariation(variation.PK_Variation);
+                const images = await publicProductService.getVariationImages(variation.PK_Variation);
                 imagesMap[variation.PK_Variation] = images;
             } catch (error) {
                 imagesMap[variation.PK_Variation] = [];

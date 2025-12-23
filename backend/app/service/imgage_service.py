@@ -2,6 +2,9 @@ from sqlalchemy.orm import Session
 
 from app.model.images_model import Images
 from app.schema.images_schema import ImagesCreate, ImagesUpdate
+import logging
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 
 class ImagesService:
@@ -14,7 +17,10 @@ class ImagesService:
             query = query.filter(Images.ProductID == product_id)
         if variation_id:
             query = query.filter(Images.VariationID == variation_id)
+        for idx, img in enumerate(query.all(), 1):
+            logger.info(f"[{idx}] Image ID:{img.PK_Images} ProductID:{img.ProductID} VariationID:{img.VariationID} Default:{img.Set_Default} SRC:{img.Id_Image}")
         return query.offset(skip).limit(limit).all()
+        
 
     def get_image_by_id(self, image_id: int):
         return self.db.query(Images).filter(Images.PK_Images == image_id).first()

@@ -56,8 +56,52 @@ export default function Profile() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Trim all inputs
+        const trimmedData = {
+            name: formData.name.trim(),
+            phone: formData.phone.trim(),
+            address: formData.address.trim(),
+        };
+
+        // Validate name
+        if (!trimmedData.name) {
+            alert('Full Name is required.');
+            return;
+        }
+        if (trimmedData.name.length < 6) {
+            alert('Full Name must be at least 6 characters.');
+            return;
+        }
+        if (trimmedData.name.length > 100) {
+            alert('Full Name must not exceed 100 characters.');
+            return;
+        }
+
+        // Validate phone if provided
+        if (trimmedData.phone) {
+            if (!/^\d+$/.test(trimmedData.phone)) {
+                alert('Phone number must contain only digits.');
+                return;
+            }
+            if (trimmedData.phone.length < 9) {
+                alert('Phone number must be at least 9 digits.');
+                return;
+            }
+            if (trimmedData.phone.length > 15) {
+                alert('Phone number must not exceed 15 digits.');
+                return;
+            }
+        }
+
+        // Validate address if provided
+        if (trimmedData.address && trimmedData.address.length > 500) {
+            alert('Address must not exceed 500 characters.');
+            return;
+        }
+
         try {
-            await userService.updateProfile(formData);
+            await userService.updateProfile(trimmedData);
             await loadProfile();
             setEditing(false);
         } catch (error) {
@@ -141,14 +185,20 @@ export default function Profile() {
                                                 value={formData.name}
                                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                                 required
+                                                minLength={6}
+                                                maxLength={100}
                                             />
                                         </div>
                                         <div className="form-field">
                                             <label>Phone Number</label>
                                             <input
-                                                type="text"
+                                                type="tel"
                                                 value={formData.phone}
                                                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                                pattern="\d{9,15}"
+                                                minLength={9}
+                                                maxLength={15}
+                                                placeholder="0123456789"
                                             />
                                         </div>
                                         <div className="form-field">
@@ -157,6 +207,7 @@ export default function Profile() {
                                                 value={formData.address}
                                                 onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                                                 rows={3}
+                                                maxLength={500}
                                             />
                                         </div>
                                         <div className="form-actions">

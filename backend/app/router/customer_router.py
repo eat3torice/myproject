@@ -3,7 +3,9 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
+from app.auth.dependencies import get_current_admin_account
 from app.database.session import get_db
+from app.model.account_model import Account
 from app.schema.customer_schema import CustomerCreate, CustomerResponse, CustomerUpdate
 from app.service.customer_service import CustomerService
 
@@ -17,7 +19,8 @@ def list_customers(
     name: str = Query(None, description="Lọc theo tên khách hàng (không phân biệt hoa thường)"),
     phone: str = Query(None, description="Lọc theo số điện thoại"),
     status: str = Query(None, description="Lọc theo trạng thái (ACTIVE/INACTIVE)"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_admin: Account = Depends(get_current_admin_account)
 ):
     """Lấy danh sách tất cả khách hàng với khả năng lọc và phân trang"""
     service = CustomerService(db)
@@ -25,7 +28,7 @@ def list_customers(
 
 
 @router.get("/{customer_id}", response_model=CustomerResponse)
-def get_customer(customer_id: int, db: Session = Depends(get_db)):
+def get_customer(customer_id: int, db: Session = Depends(get_db), current_admin: Account = Depends(get_current_admin_account)):
     """Lấy chi tiết một khách hàng"""
     service = CustomerService(db)
     customer = service.get_customer_by_id(customer_id)
@@ -35,14 +38,14 @@ def get_customer(customer_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/", response_model=CustomerResponse)
-def create_customer(customer: CustomerCreate, db: Session = Depends(get_db)):
+def create_customer(customer: CustomerCreate, db: Session = Depends(get_db), current_admin: Account = Depends(get_current_admin_account)):
     """Tạo khách hàng mới"""
     service = CustomerService(db)
     return service.create_customer(customer)
 
 
 @router.put("/{customer_id}", response_model=CustomerResponse)
-def update_customer(customer_id: int, customer: CustomerUpdate, db: Session = Depends(get_db)):
+def update_customer(customer_id: int, customer: CustomerUpdate, db: Session = Depends(get_db), current_admin: Account = Depends(get_current_admin_account)):
     """Cập nhật khách hàng"""
     service = CustomerService(db)
     updated = service.update_customer(customer_id, customer)
@@ -54,7 +57,7 @@ def update_customer(customer_id: int, customer: CustomerUpdate, db: Session = De
 
 # Deactivate customer (set status to Inactive)
 @router.put("/{customer_id}/deactivate")
-def deactivate_customer(customer_id: int, db: Session = Depends(get_db)):
+def deactivate_customer(customer_id: int, db: Session = Depends(get_db), current_admin: Account = Depends(get_current_admin_account)):
     service = CustomerService(db)
     updated = service.deactivate_customer(customer_id)
     if not updated:

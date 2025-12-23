@@ -102,13 +102,25 @@ def custom_openapi():
         routes=app.routes,
     )
 
+    # OAuth2 Password Flow - nhập username/password trực tiếp (cho cả User và Admin)
     openapi_schema["components"]["securitySchemes"] = {
-        "BearerAuth": {"type": "http", "scheme": "bearer", "bearerFormat": "JWT"}
+        "OAuth2PasswordBearer": {
+            "type": "oauth2",
+            "flows": {
+                "password": {
+                    "tokenUrl": "user/auth/login",
+                    "scopes": {}
+                }
+            },
+            "description": "Login with user or admin account"
+        }
     }
 
+    # Apply security to all endpoints
     for path in openapi_schema["paths"].values():
         for method in path.values():
-            method.setdefault("security", [{"BearerAuth": []}])
+            if isinstance(method, dict) and "security" not in method:
+                method["security"] = [{"OAuth2PasswordBearer": []}]
 
     app.openapi_schema = openapi_schema
     return app.openapi_schema

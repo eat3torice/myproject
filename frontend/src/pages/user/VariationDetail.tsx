@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { variationService } from '../../services/variationService';
+import { publicProductService } from '../../services/publicProductService';
 import { imagesService } from '../../services/imagesService';
 import { cartService } from '../../services/cartService'; // Import cartService
 import { authService } from '../../services/authService';
@@ -58,10 +58,10 @@ export default function VariationDetail() {
         setLoading(true);
         try {
             const varId = Number(id);
-            const data = await variationService.getById(varId);
+            const data = await publicProductService.getVariationById(varId);
             setVariation(data);
 
-            const imgs = await imagesService.getImagesByVariation(varId);
+            const imgs = await publicProductService.getVariationImages(varId);
             setImages(imgs);
 
             // Set default image

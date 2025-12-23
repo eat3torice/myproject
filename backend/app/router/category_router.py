@@ -4,7 +4,9 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
+from app.auth.dependencies import get_current_admin_account
 from app.database.session import get_db
+from app.model.account_model import Account
 from app.schema.category_schema import CategoryCreate, CategoryResponse, CategoryUpdate
 from app.service.category_service import CategoryService
 
@@ -17,7 +19,8 @@ def list_categories(
     limit: int = Query(100, le=1000, description="Maximum number of records to return"),
     name: Optional[str] = Query(None, description="Filter by category name (partial match)"),
     status: Optional[str] = Query(None, description="Filter by status (active/inactive)"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_admin: Account = Depends(get_current_admin_account)
 ):
     """Lấy danh sách tất cả danh mục với bộ lọc và phân trang"""
     service = CategoryService(db)
@@ -25,7 +28,7 @@ def list_categories(
 
 
 @router.get("/{category_id}", response_model=CategoryResponse)
-def get_category(category_id: int, db: Session = Depends(get_db)):
+def get_category(category_id: int, db: Session = Depends(get_db), current_admin: Account = Depends(get_current_admin_account)):
     """Lấy chi tiết một danh mục"""
     service = CategoryService(db)
     category = service.get_category_by_id(category_id)
@@ -35,14 +38,14 @@ def get_category(category_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/", response_model=CategoryResponse)
-def create_category(category: CategoryCreate, db: Session = Depends(get_db)):
+def create_category(category: CategoryCreate, db: Session = Depends(get_db), current_admin: Account = Depends(get_current_admin_account)):
     """Tạo danh mục mới"""
     service = CategoryService(db)
     return service.create_category(category)
 
 
 @router.put("/{category_id}", response_model=CategoryResponse)
-def update_category(category_id: int, category: CategoryUpdate, db: Session = Depends(get_db)):
+def update_category(category_id: int, category: CategoryUpdate, db: Session = Depends(get_db), current_admin: Account = Depends(get_current_admin_account)):
     """Cập nhật danh mục"""
     service = CategoryService(db)
     updated = service.update_category(category_id, category)
@@ -52,7 +55,7 @@ def update_category(category_id: int, category: CategoryUpdate, db: Session = De
 
 
 @router.delete("/{category_id}")
-def delete_category(category_id: int, db: Session = Depends(get_db)):
+def delete_category(category_id: int, db: Session = Depends(get_db), current_admin: Account = Depends(get_current_admin_account)):
     """Xóa danh mục"""
     service = CategoryService(db)
     deleted = service.delete_category(category_id)

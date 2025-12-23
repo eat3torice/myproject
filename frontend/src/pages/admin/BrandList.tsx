@@ -41,11 +41,39 @@ export default function BrandList() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Trim and validate
+        const trimmedName = formData.Name.trim();
+        const trimmedNote = formData.Note.trim();
+
+        if (!trimmedName) {
+            alert('Brand name is required.');
+            return;
+        }
+        if (trimmedName.length < 2) {
+            alert('Brand name must be at least 2 characters.');
+            return;
+        }
+        if (trimmedName.length > 100) {
+            alert('Brand name must not exceed 100 characters.');
+            return;
+        }
+        if (trimmedNote && trimmedNote.length > 500) {
+            alert('Note must not exceed 500 characters.');
+            return;
+        }
+
+        const dataToSubmit = {
+            Name: trimmedName,
+            Note: trimmedNote,
+            Status: formData.Status
+        };
+
         try {
             if (editingBrand) {
-                await brandService.update(editingBrand.PK_Brand, formData);
+                await brandService.update(editingBrand.PK_Brand, dataToSubmit);
             } else {
-                await brandService.create(formData);
+                await brandService.create(dataToSubmit);
             }
             setShowModal(false);
             setEditingBrand(null);
@@ -187,6 +215,8 @@ export default function BrandList() {
                                     value={formData.Name}
                                     onChange={(e) => setFormData({ ...formData, Name: e.target.value })}
                                     required
+                                    minLength={2}
+                                    maxLength={100}
                                 />
                             </div>
                             <div className="form-group">
@@ -195,6 +225,7 @@ export default function BrandList() {
                                     value={formData.Note}
                                     onChange={(e) => setFormData({ ...formData, Note: e.target.value })}
                                     rows={3}
+                                    maxLength={500}
                                 />
                             </div>
                             <div className="form-group">

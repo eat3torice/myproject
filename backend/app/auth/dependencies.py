@@ -8,7 +8,9 @@ from app.core.config import settings
 from app.database.session import get_db
 from app.model.account_model import Account
 
-oauth2 = OAuth2PasswordBearer(tokenUrl="auth/login")
+# Swagger will use this tokenUrl for the Authorize button
+# But it works with any login endpoint that returns access_token
+oauth2 = OAuth2PasswordBearer(tokenUrl="user/auth/login")
 logger = logging.getLogger(__name__)
 
 

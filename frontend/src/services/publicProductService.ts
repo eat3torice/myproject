@@ -15,6 +15,20 @@ interface ProductVariation {
     CategoryID?: number;
 }
 
+interface Category {
+    PK_CategoryID: number;
+    Name: string;
+    Description?: string;
+    Status?: string;
+}
+
+interface Brand {
+    PK_BrandID: number;
+    Name: string;
+    Description?: string;
+    Status?: string;
+}
+
 export const publicProductService = {
     getAll: async (skip: number = 0, limit: number = 100): Promise<ProductVariation[]> => {
         const response = await api.get(`/products?skip=${skip}&limit=${limit}`);
@@ -34,6 +48,26 @@ export const publicProductService = {
 
     getById: async (id: number): Promise<ProductVariation> => {
         const response = await api.get(`/products/${id}`);
+        return response.data;
+    },
+
+    getVariationById: async (variationId: number): Promise<ProductVariation> => {
+        const response = await api.get(`/products/variation/${variationId}`);
+        return response.data;
+    },
+
+    getVariationImages: async (variationId: number) => {
+        const response = await api.get(`/products/variation/${variationId}/images`);
+        return response.data;
+    },
+
+    getCategories: async (): Promise<Category[]> => {
+        const response = await api.get('/products/categories');
+        return response.data;
+    },
+
+    getBrands: async (): Promise<Brand[]> => {
+        const response = await api.get('/products/brands');
         return response.data;
     },
 

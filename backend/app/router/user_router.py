@@ -1,8 +1,13 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Form
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
+import logging
 
 from app.auth.dependencies import get_current_account
+from app.auth.auth_service import AuthService
 from app.database.session import get_db
+from app.model.account_model import Account
+from app.schema.account_schema import AccountLogin
 from app.schema.user_schema import (
     ChangePassword,
     ForgotPasswordRequest,
@@ -13,7 +18,41 @@ from app.schema.user_schema import (
 )
 from app.service.user_service import UserService
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/user", tags=["User"])
+
+
+@router.post("/auth/login")
+def user_login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    """Login cho customer (RoleID = 2) - OAuth2 compatible"""
+    logger.info(f"User login attempt for username: {form_data.username}")
+    auth_service = AuthService(db)
+    db_account = auth_service.authenticate_account(form_data.username, form_data.password)
+    
+    if not db_account:
+        user_exists = db.query(Account).filter(Account.Username == form_data.username).first()
+        if not user_exists:
+            logger.warning(f"Login failed - username not found: {form_data.username}")
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Username does not exist")
+        else:
+            logger.warning(f"Login failed - incorrect password for: {form_data.username}")
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect password")
+    logger.info(f"User login successful for: {form_data.username}, Role: {db_account.RoleID}")
+    
+    # Check account status
+    if db_account.Status != "ACTIVE":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"Account is {db_account.Status}. Please contact administrator."
+        )
+
+    access_token = auth_service.create_access_token(data={"sub": db_account.Username, "role_id": db_account.RoleID})
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "role_id": db_account.RoleID,
+        "account_status": db_account.Status
+    }
 
 
 @router.post("/register", response_model=UserProfile, status_code=status.HTTP_201_CREATED)

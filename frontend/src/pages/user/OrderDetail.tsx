@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { userService } from '../../services/userService';
-import { imagesService } from '../../services/imagesService';
+import { publicProductService } from '../../services/publicProductService';
 import { API_BASE_URL } from '../../config/api';
 import type { Order } from '../../types';
 import type { OrderLine } from '../../types/order';
@@ -44,7 +44,7 @@ export default function OrderDetail() {
         for (const variationId of variationIds) {
             if (variationId) {
                 try {
-                    const images = await imagesService.getImagesByVariation(variationId);
+                    const images = await publicProductService.getVariationImages(variationId);
                     imagesMap[variationId] = images;
                 } catch (error) {
                     console.error(`Error loading images for variation ${variationId}:`, error);
@@ -161,11 +161,22 @@ export default function OrderDetail() {
                                         {items.map((line) => {
                                             const images = productImages[line.VariationID || 0] || [];
                                             const defaultImage = images.find(img => img.Set_Default) || images[0];
-                                            const imageUrl = defaultImage ?
-                                                (defaultImage.Id_Image.startsWith('/static/') ?
-                                                    `${API_BASE_URL}${defaultImage.Id_Image}` :
-                                                    `${API_BASE_URL}/static/images/${defaultImage.Id_Image}`) :
-                                                '';
+
+                                            // Fix image URL handling
+                                            let imageUrl = '';
+                                            if (defaultImage) {
+                                                const imagePath = defaultImage.Id_Image;
+                                                if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+                                                    // External URL - use as is
+                                                    imageUrl = imagePath;
+                                                } else if (imagePath.startsWith('/static/')) {
+                                                    // Local path starting with /static/
+                                                    imageUrl = `${API_BASE_URL}${imagePath}`;
+                                                } else {
+                                                    // Local path without /static/
+                                                    imageUrl = `${API_BASE_URL}/static/images/${imagePath}`;
+                                                }
+                                            }
 
                                             return (
                                                 <tr key={line.PK_OrderLine}>

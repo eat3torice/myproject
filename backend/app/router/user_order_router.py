@@ -2,6 +2,7 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
+import logging
 
 from app.auth.dependencies import get_current_account
 from app.database.session import get_db
@@ -9,15 +10,19 @@ from app.schema.order_schema import OrderCreate, OrderLineResponse, OrderRespons
 from app.service.order_service import OrderService
 from app.service.user_service import UserService
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/user/orders", tags=["User - Orders"])
 
 
 def get_current_customer_id(current_account=Depends(get_current_account), db: Session = Depends(get_db)):
     """Helper để lấy customer_id từ account hiện tại"""
+    logger.debug(f"Getting customer_id for account: {current_account.Username} (PK: {current_account.PK_Account})")
     user_service = UserService(db)
     customer = user_service.get_user_profile(current_account.PK_Account)
     if not customer:
+        logger.error(f"Customer profile not found for account: {current_account.Username}")
         raise HTTPException(status_code=404, detail="Customer profile not found")
+    logger.debug(f"Found customer_id: {customer.PK_Customer}")
     return customer.PK_Customer
 
 

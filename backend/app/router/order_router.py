@@ -4,7 +4,9 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
+from app.auth.dependencies import get_current_admin_account
 from app.database.session import get_db
+from app.model.account_model import Account
 from app.schema.order_schema import OrderCreate, OrderLineResponse, OrderResponse, OrderUpdate
 from app.service.order_service import OrderService
 
@@ -20,6 +22,7 @@ def list_orders(
     start_date: Optional[datetime] = Query(None, description="Lọc từ ngày (YYYY-MM-DD)"),
     end_date: Optional[datetime] = Query(None, description="Lọc đến ngày (YYYY-MM-DD)"),
     db: Session = Depends(get_db),
+    current_admin: Account = Depends(get_current_admin_account)
 ):
     """Lấy danh sách tất cả đơn hàng với khả năng lọc và phân trang"""
     service = OrderService(db)
@@ -28,7 +31,7 @@ def list_orders(
 
 @router.get("/statistics")
 def get_order_statistics(
-    start_date: Optional[datetime] = None, end_date: Optional[datetime] = None, db: Session = Depends(get_db)
+    start_date: Optional[datetime] = None, end_date: Optional[datetime] = None, db: Session = Depends(get_db), current_admin: Account = Depends(get_current_admin_account)
 ):
     """Lấy thống kê đơn hàng"""
     service = OrderService(db)
@@ -36,7 +39,7 @@ def get_order_statistics(
 
 
 @router.get("/{order_id}", response_model=OrderResponse)
-def get_order(order_id: int, db: Session = Depends(get_db)):
+def get_order(order_id: int, db: Session = Depends(get_db), current_admin: Account = Depends(get_current_admin_account)):
     """Lấy chi tiết một đơn hàng"""
     service = OrderService(db)
     order = service.get_order_by_id(order_id)
@@ -46,7 +49,7 @@ def get_order(order_id: int, db: Session = Depends(get_db)):
 
 
 @router.get("/{order_id}/lines", response_model=List[OrderLineResponse])
-def get_order_lines(order_id: int, db: Session = Depends(get_db)):
+def get_order_lines(order_id: int, db: Session = Depends(get_db), current_admin: Account = Depends(get_current_admin_account)):
     """Lấy danh sách sản phẩm trong đơn hàng"""
     service = OrderService(db)
     order = service.get_order_by_id(order_id)
@@ -56,7 +59,7 @@ def get_order_lines(order_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/", response_model=OrderResponse)
-def create_order(order: OrderCreate, db: Session = Depends(get_db)):
+def create_order(order: OrderCreate, db: Session = Depends(get_db), current_admin: Account = Depends(get_current_admin_account)):
     """Tạo đơn hàng mới"""
     service = OrderService(db)
     try:
@@ -66,7 +69,7 @@ def create_order(order: OrderCreate, db: Session = Depends(get_db)):
 
 
 @router.put("/{order_id}", response_model=OrderResponse)
-def update_order(order_id: int, order: OrderUpdate, db: Session = Depends(get_db)):
+def update_order(order_id: int, order: OrderUpdate, db: Session = Depends(get_db), current_admin: Account = Depends(get_current_admin_account)):
     """Cập nhật đơn hàng"""
     service = OrderService(db)
     try:
@@ -79,7 +82,7 @@ def update_order(order_id: int, order: OrderUpdate, db: Session = Depends(get_db
 
 
 @router.post("/{order_id}/cancel", response_model=OrderResponse)
-def cancel_order(order_id: int, db: Session = Depends(get_db)):
+def cancel_order(order_id: int, db: Session = Depends(get_db), current_admin: Account = Depends(get_current_admin_account)):
     """Hủy đơn hàng và hoàn lại số lượng tồn kho"""
     service = OrderService(db)
     cancelled = service.cancel_order(order_id)

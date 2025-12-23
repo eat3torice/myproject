@@ -25,6 +25,9 @@ export default function VariationList() {
     const [imageUrl, setImageUrl] = useState('');
     const [setDefault, setSetDefault] = useState(false);
     const [productImages, setProductImages] = useState<{ [key: number]: Image[] }>({});
+    const [showImageGallery, setShowImageGallery] = useState(false);
+    const [selectedVariationImages, setSelectedVariationImages] = useState<Image[]>([]);
+    const [selectedVariationName, setSelectedVariationName] = useState('');
     const [formData, setFormData] = useState({
         ProductID: 0,
         SKU: '',
@@ -75,11 +78,97 @@ export default function VariationList() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Trim and validate
+        const trimmedSKU = formData.SKU.trim();
+        const trimmedName = formData.Name.trim();
+        const trimmedColor = formData.Color.trim();
+        const trimmedMaterial = formData.Material.trim();
+        const trimmedSize = formData.Size.trim();
+        const trimmedDescription = formData.Description.trim();
+
+        // Validate Product
+        if (!formData.ProductID || formData.ProductID === 0) {
+            alert('Please select a product.');
+            return;
+        }
+
+        // Validate SKU
+        if (!trimmedSKU) {
+            alert('SKU is required.');
+            return;
+        }
+        if (trimmedSKU.length < 2) {
+            alert('SKU must be at least 2 characters.');
+            return;
+        }
+        if (trimmedSKU.length > 50) {
+            alert('SKU must not exceed 50 characters.');
+            return;
+        }
+
+        // Validate Name
+        if (trimmedName && trimmedName.length > 200) {
+            alert('Name must not exceed 200 characters.');
+            return;
+        }
+
+        // Validate Price
+        if (formData.Price < 0) {
+            alert('Price cannot be negative.');
+            return;
+        }
+        if (formData.Price > 999999999) {
+            alert('Price is too large.');
+            return;
+        }
+
+        // Validate Quantity
+        if (formData.Quantity < 0) {
+            alert('Quantity cannot be negative.');
+            return;
+        }
+        if (!Number.isInteger(formData.Quantity)) {
+            alert('Quantity must be a whole number.');
+            return;
+        }
+
+        // Validate optional fields
+        if (trimmedColor && trimmedColor.length > 50) {
+            alert('Color must not exceed 50 characters.');
+            return;
+        }
+        if (trimmedMaterial && trimmedMaterial.length > 50) {
+            alert('Material must not exceed 50 characters.');
+            return;
+        }
+        if (trimmedSize && trimmedSize.length > 50) {
+            alert('Size must not exceed 50 characters.');
+            return;
+        }
+        if (trimmedDescription && trimmedDescription.length > 1000) {
+            alert('Description must not exceed 1000 characters.');
+            return;
+        }
+
+        const dataToSubmit = {
+            ProductID: formData.ProductID,
+            SKU: trimmedSKU,
+            Name: trimmedName,
+            Price: formData.Price,
+            Quantity: formData.Quantity,
+            Color: trimmedColor,
+            Material: trimmedMaterial,
+            Size: trimmedSize,
+            Description: trimmedDescription,
+            Status: formData.Status,
+        };
+
         try {
             if (editingVariation) {
-                await variationService.update(editingVariation.PK_Variation, formData);
+                await variationService.update(editingVariation.PK_Variation, dataToSubmit);
             } else {
-                await variationService.create(formData);
+                await variationService.create(dataToSubmit);
             }
             setShowModal(false);
             setEditingVariation(null);
@@ -133,15 +222,41 @@ export default function VariationList() {
 
     const handleUploadSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!imageUrl || !uploadingVariation) {
+
+        // Trim and validate image URL
+        const trimmedImageUrl = imageUrl.trim();
+
+        if (!trimmedImageUrl) {
             alert('Please enter image URL');
+            return;
+        }
+
+        // Validate URL format
+        try {
+            const url = new URL(trimmedImageUrl);
+            if (!url.protocol.startsWith('http')) {
+                alert('Image URL must start with http:// or https://');
+                return;
+            }
+        } catch {
+            alert('Invalid URL format');
+            return;
+        }
+
+        if (trimmedImageUrl.length > 500) {
+            alert('Image URL must not exceed 500 characters.');
+            return;
+        }
+
+        if (!uploadingVariation) {
+            alert('No variation selected');
             return;
         }
 
         try {
             const response = await api.post(`/admin/variations/${uploadingVariation.PK_Variation}/add-image-url`, null, {
                 params: {
-                    image_url: imageUrl,
+                    image_url: trimmedImageUrl,
                     set_default: setDefault
                 }
             });
@@ -175,6 +290,13 @@ export default function VariationList() {
             console.error('Delete error:', error);
             alert('Failed to delete image');
         }
+    };
+
+    const handleViewImages = (variation: Variation) => {
+        const images = productImages[variation.PK_Variation] || [];
+        setSelectedVariationImages(images);
+        setSelectedVariationName(variation.Name);
+        setShowImageGallery(true);
     };
 
     const resetForm = () => {
@@ -238,11 +360,22 @@ export default function VariationList() {
                             console.log('Images for variation', variation.PK_Variation, ':', images);
                             const defaultImage = images.find(img => img.Set_Default) || images[0];
                             console.log('Default image:', defaultImage);
-                            const imageUrl = defaultImage ?
-                                (defaultImage.Id_Image.startsWith('/static/') ?
-                                    `${API_BASE_URL}${defaultImage.Id_Image}` :
-                                    `${API_BASE_URL}/static/images/${defaultImage.Id_Image}`) :
-                                '';
+
+                            // Fix image URL handling
+                            let imageUrl = '';
+                            if (defaultImage) {
+                                const imagePath = defaultImage.Id_Image;
+                                if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+                                    // External URL - use as is
+                                    imageUrl = imagePath;
+                                } else if (imagePath.startsWith('/static/')) {
+                                    // Local path starting with /static/
+                                    imageUrl = `${API_BASE_URL}${imagePath}`;
+                                } else {
+                                    // Local path without /static/
+                                    imageUrl = `${API_BASE_URL}/static/images/${imagePath}`;
+                                }
+                            }
                             console.log('Image URL:', imageUrl);
 
                             return (
@@ -302,6 +435,14 @@ export default function VariationList() {
                                                 Edit
                                             </button>
                                             <button
+                                                onClick={() => handleViewImages(variation)}
+                                                className="btn-info"
+                                                disabled={(productImages[variation.PK_Variation] || []).length === 0}
+                                                title={(productImages[variation.PK_Variation] || []).length === 0 ? "No images" : "View Images"}
+                                            >
+                                                View Images ({(productImages[variation.PK_Variation] || []).length})
+                                            </button>
+                                            <button
                                                 onClick={() => handleUploadImage(variation)}
                                                 className="btn-secondary"
                                                 disabled={(productImages[variation.PK_Variation] || []).length >= 3}
@@ -353,6 +494,8 @@ export default function VariationList() {
                                     value={formData.SKU}
                                     onChange={(e) => setFormData({ ...formData, SKU: e.target.value })}
                                     required
+                                    minLength={2}
+                                    maxLength={50}
                                 />
                             </div>
                             <div className="form-group">
@@ -362,6 +505,7 @@ export default function VariationList() {
                                     value={formData.Name}
                                     onChange={(e) => setFormData({ ...formData, Name: e.target.value })}
                                     required
+                                    maxLength={200}
                                 />
                             </div>
                             <div className="form-group">
@@ -369,6 +513,8 @@ export default function VariationList() {
                                 <input
                                     type="number"
                                     step="0.01"
+                                    min="0"
+                                    max="999999999"
                                     value={formData.Price}
                                     onChange={(e) =>
                                         setFormData({ ...formData, Price: parseFloat(e.target.value) })
@@ -380,6 +526,8 @@ export default function VariationList() {
                                 <label>Quantity *</label>
                                 <input
                                     type="number"
+                                    min="0"
+                                    step="1"
                                     value={formData.Quantity}
                                     onChange={(e) =>
                                         setFormData({ ...formData, Quantity: parseInt(e.target.value) })
@@ -393,6 +541,7 @@ export default function VariationList() {
                                     type="text"
                                     value={formData.Color}
                                     onChange={(e) => setFormData({ ...formData, Color: e.target.value })}
+                                    maxLength={50}
                                 />
                             </div>
                             <div className="form-group">
@@ -401,6 +550,7 @@ export default function VariationList() {
                                     type="text"
                                     value={formData.Material}
                                     onChange={(e) => setFormData({ ...formData, Material: e.target.value })}
+                                    maxLength={50}
                                 />
                             </div>
                             <div className="form-group">
@@ -409,6 +559,7 @@ export default function VariationList() {
                                     type="text"
                                     value={formData.Size}
                                     onChange={(e) => setFormData({ ...formData, Size: e.target.value })}
+                                    maxLength={50}
                                 />
                             </div>
                             <div className="form-group">
@@ -417,6 +568,7 @@ export default function VariationList() {
                                     value={formData.Description}
                                     onChange={(e) => setFormData({ ...formData, Description: e.target.value })}
                                     rows={3}
+                                    maxLength={1000}
                                 />
                             </div>
                             <div className="form-group">
@@ -459,6 +611,9 @@ export default function VariationList() {
                                     onChange={(e) => setImageUrl(e.target.value)}
                                     placeholder="https://cdn.jsdelivr.net/gh/..."
                                     required
+                                    maxLength={500}
+                                    pattern="https?://.+"
+                                    title="Must be a valid HTTP or HTTPS URL"
                                 />
                                 <small style={{ color: '#666', marginTop: '5px', display: 'block' }}>
                                     Example: https://cdn.jsdelivr.net/gh/eat4torice/my_image@hash/image.png
@@ -487,6 +642,61 @@ export default function VariationList() {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {showImageGallery && selectedVariationImages.length > 0 && (
+                <div className="modal-overlay" onClick={() => setShowImageGallery(false)}>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '800px' }}>
+                        <h2>Images: {selectedVariationName}</h2>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '20px', marginTop: '20px' }}>
+                            {selectedVariationImages.map((image) => {
+                                const imageUrl = image.Id_Image.startsWith('http')
+                                    ? image.Id_Image
+                                    : image.Id_Image.startsWith('/static/')
+                                        ? `${API_BASE_URL}${image.Id_Image}`
+                                        : `${API_BASE_URL}/static/images/${image.Id_Image}`;
+
+                                return (
+                                    <div key={image.PK_Images} style={{ border: '1px solid #ddd', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+                                        <img
+                                            src={imageUrl}
+                                            alt='Variation image'
+                                            style={{ width: '100%', height: '200px', objectFit: 'cover' }}
+                                        />
+                                        <div style={{ padding: '10px' }}>
+                                            <p style={{ fontSize: '12px', color: '#666', marginBottom: '8px', wordBreak: 'break-all' }}>
+                                                {image.Id_Image}
+                                            </p>
+                                            <button
+                                                onClick={() => {
+                                                    const variation = variations.find(v =>
+                                                        (productImages[v.PK_Variation] || []).some(img => img.PK_Images === image.PK_Images)
+                                                    );
+                                                    if (variation) {
+                                                        handleDeleteImage(image.PK_Images, variation.PK_Variation);
+                                                    }
+                                                }}
+                                                className="btn-delete"
+                                                style={{ width: '100%' }}
+                                            >
+                                                Delete
+                                            </button>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                        <div className="modal-actions" style={{ marginTop: '20px' }}>
+                            <button
+                                type="button"
+                                onClick={() => setShowImageGallery(false)}
+                                className="btn-secondary"
+                            >
+                                Close
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

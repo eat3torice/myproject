@@ -12,6 +12,17 @@ class AccountCreate(BaseModel):
         if not v.isdigit():
             raise ValueError("Phone number must contain only digits.")
         return v
+    
+    @validator("username")
+    def username_no_spaces(cls, v):
+        if " " in v:
+            raise ValueError("Username khong de trong")
+        return v
+    def username_not_empty(cls, v):
+        if not v.strip():
+            raise ValueError("Username khong de trong")
+        return v
+    
 
 
 class AccountLogin(BaseModel):
